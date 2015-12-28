@@ -1,0 +1,46 @@
+<html>
+<head>
+    <title>Game Lobby</title>
+    <link id="primary-style" rel="stylesheet" type="text/css" href="/css/nameselect.css">
+</head>
+<body>
+
+    <div id="name-selection">
+        <form action="" id="name-me"> 
+            <input autocomplete="off" placeholder="choose a name" /><button>Submit</button>
+        </form>
+    </div>
+
+    <div id="lobby">
+        <ul id="user-list" data-bind="foreach: users">
+            <li><span data-bind="text: name"></span><span data-bind="text: is_me_msg"></span></li>
+        </ul>
+
+        <ul id="message-list" data-bind="foreach: messages">
+            <li><em data-bind="text: sender"></em><span data-bind="text: msg"></span></li>
+        </ul>
+
+        <ul id="game-list" data-bind="foreach: games">
+        </ul>
+        <button id="creategame">Create Game</button>
+
+        <form id="newgameform" action="">
+            <div id="newgameformfields"></div>
+            <button>Submit</button>
+        </form>
+
+        <form id="mform" action="">
+            <input id="m" autocomplete="off" /><button>Send</button>
+        </form>
+    </div>
+
+    <div id="game"> 
+        
+    </div>
+
+    <script src="/js/socket.io.js"></script>
+    <script src="/js/jquery.js"></script>
+    <script src="/js/knockout.js"></script>
+    <script src="/js/client.js"></script>
+</body>
+</html>
