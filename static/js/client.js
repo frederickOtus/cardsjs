@@ -41,7 +41,6 @@ socket.on('named', function(m){
 });
 
 socket.on('name taken', function(msg){
-    console.log(msg);
     $('input','#name-me').val('');
     alert('name taken');
 });
@@ -73,6 +72,7 @@ socket.on('update pending games', function(games){
     lvm.games(games);
     lvm.mygame = null;
     games.forEach(function(g){
+        console.log(g.host);
         if(g.host == myname)
             lvm.mygame = g;
     });

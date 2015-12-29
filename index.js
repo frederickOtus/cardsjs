@@ -20,7 +20,8 @@ function PGame(hosts, game){
 app.use(express.static('static'));
 app.use(cookieParser());
 
-//global vars
+//global var
+var gameNSP = io.of('/game/');
 var nameReservations = {};
 var lobby = new chatroom(io,'lobby');
 var activeGames = [];
@@ -104,7 +105,7 @@ io.on('connection', function(socket){
 
     socket.on('create game', function(data){
         settings = querystring.parse(data);
-        var rpsG = new rps.game(); // WHAT IS THIS DOING!?
+        var rpsG = new rps(gameNSP, settings);
         var game = new PGame(socket,rpsG);
         
         pendingGames.push(game);
