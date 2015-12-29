@@ -64,7 +64,29 @@ socket.on('new game form', function(form){
     $('#newgameform').show();
 });
 
+socket.on('game created', function(){
+    $('#creategame').hide();
+    $('#newgameform').hide();
+});
+
+socket.on('update pending games', function(games){
+    lvm.games(games);
+    lvm.mygame = null;
+    games.forEach(function(g){
+        if(g.host == myname)
+            lvm.mygame = g;
+    });
+});
+
 //knockout ui management
+function GameListing(h, t, c, f){
+    var self = this;
+    self.host = h;
+    self.type = t;
+    self.capacity = c;
+    self.filled = f;
+}
+
 function User(nm){
     var self = this;
     self.name = nm;
@@ -84,6 +106,7 @@ function Message(s, m){
 function LobbyViewModel(){
     var self = this;
     
+    self.mygame = ko.observable(null);
     self.users = ko.observableArray([]);
     self.messages = ko.observableArray([]);
     self.games = ko.observableArray([]);

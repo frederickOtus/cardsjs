@@ -6,18 +6,39 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var uuid = require('node-uuid');
 var cookieParser = require('cookie-parser');
+var chatroom = require('./chatroom.js');
+
+//
+var rps = require('./games/rps/rps.js');
+function PGame(hosts, game){
+    this.host = hosts.username;
+    this.players = [hosts.uid];
+    this.game = game;
+}
 
 //app uses
 app.use(express.static('static'));
 app.use(cookieParser());
 
 //global vars
-var names = [];
 var nameReservations = {};
-var lobby = {};
-var recent_msgs = [];
+var lobby = new chatroom(io,'lobby');
+var activeGames = [];
+var pendingGames = [];
 
 //helper functions
+function updateGameData(){
+    io.sockets.emit('update pending games',getGameData());
+}
+
+function getGameData(){
+    gdata = [];
+    pendingGames.forEach(function(game){
+        gdata.push({'host':game.host,'type':game.game.type,'capacity':game.game.numPlayers,'filled':game.players.length});
+    });
+    return gdata;
+}
+
 function parseCookies (cs) {
     var list = {};
 
@@ -29,41 +50,22 @@ function parseCookies (cs) {
     return list;
 }
 
-function joinLobby(socket, name){
-    names.push(name);
-    socket.username = name;
-    io.sockets.connected[socket.id].emit('named', {'name': name, 'users': names, 'msgs': recent_msgs});
-    io.to('lobby').emit('user joined', name);
-
-    socket.on('chat message', function(msg){
-        var m = {'msg':msg, 'sender': name};
-        io.to('lobby').emit('chat message', m);
-        recent_msgs.push(m);
-    });
-
-    socket.on('new game', function(){
-        fs.readFile(__dirname + '/games/rps/settings.html','utf8',function(err,data){
-            io.sockets.connected[socket.id].emit('new game form', data);
-        });
-    });
-
-    socket.on('create game', function(data){
-        console.log(querystring.parse(data));
-        console.log(data);
-    });
-
-    socket.join('lobby');
-}
-
 //paths
 app.get('/', function(req, res){
     if(Object.keys(req.cookies).length == 0 || !req.cookies.hasOwnProperty('id')){
         var uid = uuid.v4();
         res.cookie('id', uid, {maxAge: 60*60*24});
+    }else{
+        res.cookie('id', req.cookies.id, {maxAge: 60*60*24});
     }
     res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/play/', function(req, res){
+    
+});
+
+//sockets
 io.on('connection', function(socket){
 
     socket.on('name me',function(nameMsg){
@@ -71,7 +73,9 @@ io.on('connection', function(socket){
             cookies = parseCookies(nameMsg.cookies);
             if(Object.keys(cookies).length > 0 && cookies.hasOwnProperty('id')){
                 if(nameReservations.hasOwnProperty(cookies.id)){
-                    joinLobby(socket, nameReservations[cookies.id]);
+                    lobby.joinRoom(socket, nameReservations[cookies.id]);
+                    socket.emit('update pending games',getGameData());
+                    socket.uid = cookies.id;
                 }
             }
             return;
@@ -88,14 +92,31 @@ io.on('connection', function(socket){
         }else{
             cookies = parseCookies(nameMsg.cookies);
             nameReservations[cookies.id] = nameMsg.name;
-            joinLobby(socket, nameMsg.name);
+            socket.uid = cookies.id;
+            lobby.joinRoom(socket, nameMsg.name);
+            socket.emit('update pending games',getGameData());
         }
     });
+
     socket.on('disconnect', function(){
-       if(socket.hasOwnProperty('username')){
-           names.splice(names.indexOf(socket.username, 1));
-           io.to('lobby').emit('user left', socket.username);
-       } 
+        lobby.leaveRoom(socket);
+    });
+
+    socket.on('create game', function(data){
+        settings = querystring.parse(data);
+        var rpsG = new rps.game(); // WHAT IS THIS DOING!?
+        var game = new PGame(socket,rpsG);
+        
+        pendingGames.push(game);
+
+        socket.emit('game created', {});
+        updateGameData();
+    });
+
+    socket.on('new game', function(){
+        fs.readFile(__dirname + '/games/rps/settings.html','utf8',function(err,data){
+            socket.emit('new game form', data);
+        });
     });
 
     socket.emit('cookie check',{});
