@@ -24,6 +24,20 @@ $('#newgameform').submit(function(){
     return false;
 });
 
+$('#mygamediv').on('click', 'button', function(){ 
+    socket.emit('cancel game', {});
+});
+
+$('#mygamediv').on('click', 'button', function(){ 
+    socket.emit('cancel game', {});
+});
+
+$('#game-list').on('click', 'button', function(){ 
+    var par = $('button','#game-list').parent().parent();
+    var hname = $('.hostname', par).html();
+    socket.emit('join game', hname);
+});
+
 //socket message passing
 
 //this will right after cookie storage
@@ -68,23 +82,35 @@ socket.on('game created', function(){
     $('#newgameform').hide();
 });
 
+socket.on('game starting', function(){
+    window.location.href = "/play/";
+});
+
 socket.on('update pending games', function(games){
     lvm.games(games);
-    lvm.mygame = null;
+    lvm.mygame(null);
     games.forEach(function(g){
-        console.log(g.host);
-        if(g.host == myname)
-            lvm.mygame = g;
+        console.log(g);
+        if(g.host == myname){
+            lvm.mygame(g);
+            $('#creategame').hide();
+            $('#newgameform').hide();
+        }
     });
+    if(lvm.mygame() == null){
+        $('#creategame').show();
+        $('#newgameform').show();
+    }
 });
 
 //knockout ui management
-function GameListing(h, t, c, f){
+function GameListing(h, t, c, f, p){
     var self = this;
     self.host = h;
     self.type = t;
     self.capacity = c;
     self.filled = f;
+    self.players = p;
 }
 
 function User(nm){

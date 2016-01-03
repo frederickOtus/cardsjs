@@ -20,20 +20,22 @@
             <li><em data-bind="text: sender"></em><span data-bind="text: msg"></span></li>
         </ul>
 
-        <div data-bind="visible: mygame">
-            Hosting: <span data-bind="mygame.filled"></span><span data-bind="mygame.capacity"></span>
+        <div id="mygamediv" data-bind="if: mygame">
+            Hosting: <span data-bind="text: mygame().filled"></span>/<span data-bind="text: mygame().capacity"></span>
             <button id="cancel-game">Cancel</button>
         </div>   
 
-        <div data-bind="visible: !mygame">
-            <table id="game-list" data-bind="foreach: games">
-                <tr>
-                    <td data-bind="text: host"></td>
-                    <td data-bind="text: type"></td>
-                    <td data-bind="text: capacity"></td>
-                    <td data-bind="text: filled"></td>
-                    <td><button>Join!</button></td>
-                </tr>
+        <div id="game-list" data-bind="ifnot: mygame">
+            <table>
+                <tbody id="" data-bind="foreach: games">
+                    <tr>
+                        <td class="hostname" data-bind="text: host"></td>
+                        <td data-bind="text: type"></td>
+                        <td data-bind="text: capacity"></td>
+                        <td data-bind="text: filled"></td>
+                        <td><button>Join!</button></td>
+                    </tr>
+                </tbody>
             </table>
         </div>
 

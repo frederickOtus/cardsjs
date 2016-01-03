@@ -11,9 +11,40 @@ var chatroom = require('./chatroom.js');
 //
 var rps = require('./games/rps/rps.js');
 function PGame(hosts, game){
-    this.host = hosts.username;
-    this.players = [hosts.uid];
-    this.game = game;
+    return {
+        host: hosts.username,
+        players: [hosts.uid],
+        game: game,
+        join: function(socket){
+            this.players.forEach(function(pn){
+                if(pn == socket.uid)
+                    return false;
+            });
+
+            if(this.players.length >= this.game.getNumPlayers())
+                return false;
+
+            this.players.push(socket.uid);
+            return true;
+        },
+
+        leave: function(socket){
+            for(var i = 0; i < this.players.length; i++){
+                if(this.players[i] == socket.uid){
+                    this.players.splice(i,1);
+                    return true;
+                }
+            }
+            return false;
+        },
+
+        ready: function(){
+            if(this.players.length == this.game.getNumPlayers())
+                return true;
+            if(this.players.length < this.game.getNumPlayers())
+                return false;
+        }
+    }
 }
 
 //app uses
@@ -23,19 +54,57 @@ app.use(cookieParser());
 //global var
 var gameNSP = io.of('/game/');
 var nameReservations = {};
-var lobby = new chatroom(io,'lobby');
+var lobby = chatroom(io,'lobby');
 var activeGames = [];
 var pendingGames = [];
+var socketList = {
+    list: [],
+    add: function(s){ this.list.push(s); },
+    remove: 
+        function(s){ 
+            for(var i = 0; i < this.list.length; i++){
+                if(this.list[i].id == s.id){
+                    this.list.splice(i,1);
+                    return;
+                }
+            }
+        },
+    get: 
+        function(uid) { 
+            for(var i = 0; i < this.list.length; i++){
+                if(this.list[i].hasOwnProperty('uid') && this.list[i].uid == uid)
+                    return this.list[i];
+            }
+            return null;
+        }
+};
 
 //helper functions
+function launchGame(game){
+    game.players.forEach(function(uid){
+        var sock = socketList.get(uid);
+        if(sock != null)
+            sock.emit('game starting');
+    });
+
+    for(var i = 0; i < pendingGames.length; i++){
+        if(pendingGames[i].host == game.host){
+            pendingGames.splice(i,1);
+            activeGames.push(game);
+        }
+    }
+}
+
 function updateGameData(){
     io.sockets.emit('update pending games',getGameData());
 }
 
 function getGameData(){
     gdata = [];
-    pendingGames.forEach(function(game){
-        gdata.push({'host':game.host,'type':game.game.type,'capacity':game.game.numPlayers,'filled':game.players.length});
+    pendingGames.forEach(function(g){
+        var players = [];
+        g.players.forEach(function(p){ players.push(nameReservations[p]); });
+        gdata.push({'host':g.host,'type':g.game.getType(), 'capacity':g.game.getNumPlayers(),'filled':g.players.length, 'players':players});
     });
     return gdata;
 }
@@ -61,13 +130,52 @@ app.get('/', function(req, res){
     }
     res.sendFile(__dirname + '/index.html');
 });
-
-app.get('/play/', function(req, res){
     
+app.get('/play/', function(req, res){
+    res.writeHead(200, {"Content-Type": "text/plain"});
+    
+    console.log(req.cookies);
+
+    if(Object.keys(req.cookies).length == 0 || !req.cookies.hasOwnProperty('id')){
+        res.end("NOT IN GAME");
+    }else{
+        console.log("*****");
+        console.log(req.cookies.id);
+        console.log(activeGames[0]);
+        for(var i = 0; i < activeGames.length; i++){
+            if(activeGames[i].players.indexOf(req.cookies.id) > -1){
+                res.end("IN GAME");
+            }
+        }
+        res.end("NOT IN GAME");
+    }
 });
 
 //sockets
 io.on('connection', function(socket){
+    socketList.add(socket);
+    socket.on('cancel game', function(){
+        for(var i = 0; i < pendingGames.length; i++){
+            if(pendingGames[i].host == socket.username){
+                pendingGames.splice(i, 1);
+                break;
+            }
+        }
+        updateGameData();
+    });
+
+    socket.on('join game', function(hname){
+        pendingGames.forEach(function(game){
+            if(game.host == hname){
+                game.join(socket); 
+                if(game.ready())
+                    launchGame(game);
+            }else{
+                game.leave(socket);
+            } 
+        });
+        updateGameData();
+    });
 
     socket.on('name me',function(nameMsg){
         if(nameMsg.name == null){
@@ -100,13 +208,14 @@ io.on('connection', function(socket){
     });
 
     socket.on('disconnect', function(){
+        socketList.remove(socket);
         lobby.leaveRoom(socket);
     });
 
     socket.on('create game', function(data){
         settings = querystring.parse(data);
-        var rpsG = new rps(gameNSP, settings);
-        var game = new PGame(socket,rpsG);
+        var rpsG = rps(gameNSP, settings);
+        var game = PGame(socket,rpsG);
         
         pendingGames.push(game);
 
