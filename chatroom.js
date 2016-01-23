@@ -5,7 +5,6 @@ module.exports = function(nsp,room){
 
     return {
         joinRoom: function(socket, name, allowRepeat){
-            b = typeof b !== 'undefined' ?  b : false;
             if(!allowRepeat)
                 if(names.indexOf(name) > -1)
                     return false;

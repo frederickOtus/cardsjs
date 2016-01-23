@@ -133,18 +133,14 @@ app.get('/', function(req, res){
     
 app.get('/play/', function(req, res){
     res.writeHead(200, {"Content-Type": "text/plain"});
-    
-    console.log(req.cookies);
 
     if(Object.keys(req.cookies).length == 0 || !req.cookies.hasOwnProperty('id')){
         res.end("NOT IN GAME");
     }else{
-        console.log("*****");
-        console.log(req.cookies.id);
-        console.log(activeGames[0]);
         for(var i = 0; i < activeGames.length; i++){
             if(activeGames[i].players.indexOf(req.cookies.id) > -1){
-                res.end("IN GAME");
+                res.sendFile(__dirname + "/games/rps/index.html");
+                res.end();
             }
         }
         res.end("NOT IN GAME");

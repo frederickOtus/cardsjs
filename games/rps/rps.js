@@ -6,5 +6,6 @@ module.exports = function(nsp, settings){
     return {
         getType: function() { return type; },
         getNumPlayers: function(){ return numPlayers },
+        start: function(){},
     };
 }
