@@ -1,5 +1,6 @@
 module.exports = function(host){
     return {
+        pending: true,
         host: host.username,
         players: [host.guid],
         join: function(socket){
@@ -8,13 +9,13 @@ module.exports = function(host){
                     return false;
             });
 
-            this.players.push(socket.uid);
+            this.players.push(socket.guid);
             return true;
         },
 
         leave: function(socket){
             for(var i = 0; i < this.players.length; i++){
-                if(this.players[i] == socket.uid){
+                if(this.players[i] == socket.guid){
                     this.players.splice(i,1);
                     return true;
                 }

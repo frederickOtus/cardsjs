@@ -10,7 +10,6 @@ function getDirectories(srcpath) {
 function validModule(path){
     var items = fs.readdirSync(__dirname + '/' + path);
     return items.indexOf("settings.html") > -1
-           && items.indexOf("index.html") > -1
            && items.indexOf("static") > -1
            && items.indexOf("server.js") > -1;
 }
@@ -22,7 +21,6 @@ module.exports = function(app, express){
         app.use('/' + path, express.static(__dirname + '/' + path + '/static'));
         return { "module": require(__dirname + '/' + path + '/server.js'),
                  "name": path,
-                 "settingsForm": __dirname + '/' + path + '/settings.html',
-                 "basePage": __dirname + '/' + path + '/index.html'};
+                 "settingsForm": __dirname + '/' + path + '/settings.html',}
     });
 }

@@ -12,7 +12,6 @@ module.exports = function(nsp,room){
             names.push(name);
             socket.username = name;
             socket.emit('joined lobby', {'name': name, 'users': names, 'msgs': recentMsgs});
-            console.log(names);
             nsp.to(room).emit('user joined', name);
 
             socket.on('chat message', function(msg){
