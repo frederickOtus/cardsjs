@@ -39,7 +39,12 @@
             </table>
         </div>
 
-        <button id="creategame">Create Game</button>
+        <div id="game-creation">
+            <select id="game-types" data-bind="foreach: gameTypes">
+                <option data-bind="text: name"></option>
+            </select>
+            <button id="creategame">Create Game</button>
+        </div>
 
         <form id="newgameform" action="">
             <div id="newgameformfields"></div>

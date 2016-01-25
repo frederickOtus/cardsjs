@@ -1,13 +1,47 @@
 var socket = io();
 var lvm = new LobbyViewModel();
 var myname = "";
+var gametype = "";
 
-//User generated events
+/*
+ *  Functions for getting a user logged in
+ */
+$(document).ready(function(){
+    var name = localStorage.getItem('name');
+    if(name != null){
+        socket.emit('name', {'name': name, 'cookies':document.cookie});
+    }
+});
+
 $('#name-me').submit(function(){
-    socket.emit('name me', {'name': $('input','#name-me').val(), 'cookies':document.cookie});
+    socket.emit('name', {'name': $('input','#name-me').val(), 'cookies':document.cookie});
     return false;
 });
 
+socket.on('named', function(m){
+    $('#primary-style').attr('href', '/css/lobby.css');
+    myname = m.name;
+    localStorage.setItem('name', m.name);
+});
+
+socket.on('name taken', function(msg){
+    $('input','#name-me').val('');
+    alert('name taken');
+});
+
+socket.on('joined lobby', function(m){
+    lvm.messages(m.msgs);
+    for(var i = 0; i < m.users.length; i++){
+        lvm.add_user(m.users[i]);
+    }
+});
+
+socket.on('game types', function(types){
+    lvm.gameTypes(types);
+    console.log(JSON.stringify(types));
+});
+
+//User generated events
 $('#mform').submit(function(){
     socket.emit('chat message', $('#m').val());
     $('#m').val('');
@@ -15,12 +49,14 @@ $('#mform').submit(function(){
 });
 
 $('#creategame').click(function(){
-    socket.emit('new game','');
+    socket.emit('new game',$('#game-types').val());
+    gametype = $('#game-types').val();
     return false;
 });
 
 $('#newgameform').submit(function(){
-    socket.emit('create game',$(this).serialize());
+    socket.emit('create game',{'type': gametype,
+                               'settings': $(this).serialize()});
     return false;
 });
 
@@ -39,25 +75,6 @@ $('#game-list').on('click', 'button', function(){
 });
 
 //socket message passing
-
-//this will right after cookie storage
-socket.on('cookie check', function(m){
-    socket.emit('name me', {'name': null, 'cookies':document.cookie});
-});
-
-socket.on('named', function(m){
-    $('#primary-style').attr('href', '/css/lobby.css');
-    myname = m.name;
-    lvm.messages(m.msgs);
-    for(var i = 0; i < m.users.length; i++){
-        lvm.add_user(m.users[i]);
-    }
-});
-
-socket.on('name taken', function(msg){
-    $('input','#name-me').val('');
-    alert('name taken');
-});
 
 socket.on('chat message', function(msg){
     console.log(msg);
@@ -136,6 +153,7 @@ function LobbyViewModel(){
     self.users = ko.observableArray([]);
     self.messages = ko.observableArray([]);
     self.games = ko.observableArray([]);
+    self.gameTypes = ko.observableArray([]);
 
     self.add_message = function(sender, msg){
         self.messages.push(new Message(sender, msg));

@@ -1,16 +1,12 @@
-module.exports = function (hosts, game){
+module.exports = function(host){
     return {
-        host: hosts.username,
-        players: [hosts.uid],
-        game: game,
+        host: host.username,
+        players: [host.guid],
         join: function(socket){
             this.players.forEach(function(pn){
-                if(pn == socket.uid)
+                if(pn == socket.guid)
                     return false;
             });
-
-            if(this.players.length >= this.game.getNumPlayers())
-                return false;
 
             this.players.push(socket.uid);
             return true;
@@ -25,12 +21,8 @@ module.exports = function (hosts, game){
             }
             return false;
         },
-
         ready: function(){
-            if(this.players.length == this.game.getNumPlayers())
-                return true;
-            if(this.players.length < this.game.getNumPlayers())
-                return false;
+            return true;
         }
     }
 }

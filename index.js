@@ -7,9 +7,10 @@ var io = require('socket.io')(http);
 var uuid = require('node-uuid');
 var cookieParser = require('cookie-parser');
 var chatroom = require('./chatroom.js');
+var handshake = require('./handshake.js');
+var gameLoader = require('./games/loader.js');
 
 //
-var rps = require('./games/rps/rps.js');
 function PGame(hosts, game){
     return {
         host: hosts.username,
@@ -52,37 +53,32 @@ app.use(express.static('static'));
 app.use(cookieParser());
 
 //global var
+var gameModules = gameLoader(app, express);
 var gameNSP = io.of('/game/');
-var nameReservations = {};
 var lobby = chatroom(io,'lobby');
 var activeGames = [];
 var pendingGames = [];
-var socketList = {
-    list: [],
-    add: function(s){ this.list.push(s); },
-    remove: 
-        function(s){ 
-            for(var i = 0; i < this.list.length; i++){
-                if(this.list[i].id == s.id){
-                    this.list.splice(i,1);
-                    return;
-                }
-            }
-        },
-    get: 
-        function(uid) { 
-            for(var i = 0; i < this.list.length; i++){
-                if(this.list[i].hasOwnProperty('uid') && this.list[i].uid == uid)
-                    return this.list[i];
-            }
-            return null;
-        }
-};
 
 //helper functions
+function gmoduleByName(name){
+    for(var i = 0; i < gameModules.length; i++){
+        if(gameModules[i].name == name)
+            return gameModules[i];
+    }
+    return null;
+}
+
+function socketByGuid(guid){
+    for(var i = 0; i<io.sockets.sockets.length; i++){
+        if(io.sockets.sockets[i].guid == guid)
+            return io.sockets.sockets[i];
+    }
+    return null;
+}
+
 function launchGame(game){
     game.players.forEach(function(uid){
-        var sock = socketList.get(uid);
+        var sock = socketByGuid(uid);
         if(sock != null)
             sock.emit('game starting');
     });
@@ -103,21 +99,10 @@ function getGameData(){
     gdata = [];
     pendingGames.forEach(function(g){
         var players = [];
-        g.players.forEach(function(p){ players.push(nameReservations[p]); });
-        gdata.push({'host':g.host,'type':g.game.getType(), 'capacity':g.game.getNumPlayers(),'filled':g.players.length, 'players':players});
+        g.players.forEach(function(p){ players.push(socketByGuid(p).username); });
+        gdata.push({'host':g.host,'type':g.game.type, 'capacity':g.game.numPlayers,'filled':g.players.length, 'players':players});
     });
     return gdata;
-}
-
-function parseCookies (cs) {
-    var list = {};
-
-    cs && cs.split(';').forEach(function( cookie ) {
-        var parts = cookie.split('=');
-        list[parts.shift().trim()] = decodeURI(parts.join('='));
-    });
-
-    return list;
 }
 
 //paths
@@ -149,83 +134,64 @@ app.get('/play/', function(req, res){
 
 //sockets
 io.on('connection', function(socket){
-    socketList.add(socket);
-    socket.on('cancel game', function(){
-        for(var i = 0; i < pendingGames.length; i++){
-            if(pendingGames[i].host == socket.username){
-                pendingGames.splice(i, 1);
-                break;
-            }
-        }
-        updateGameData();
-    });
+    handshake(socket, function(s) { 
+        lobby.joinRoom(s, s.username);
+        s.emit('update pending games', getGameData());
+        s.emit('game types', gameModules.map(function(mod){ return {'name':mod.name };}));
 
-    socket.on('join game', function(hname){
-        pendingGames.forEach(function(game){
-            if(game.host == hname){
-                game.join(socket); 
-                if(game.ready())
-                    launchGame(game);
-            }else{
-                game.leave(socket);
-            } 
-        });
-        updateGameData();
-    });
-
-    socket.on('name me',function(nameMsg){
-        if(nameMsg.name == null){
-            cookies = parseCookies(nameMsg.cookies);
-            if(Object.keys(cookies).length > 0 && cookies.hasOwnProperty('id')){
-                if(nameReservations.hasOwnProperty(cookies.id)){
-                    lobby.joinRoom(socket, nameReservations[cookies.id]);
-                    socket.emit('update pending games',getGameData());
-                    socket.uid = cookies.id;
+        s.on('cancel game', function(){
+            for(var i = 0; i < pendingGames.length; i++){
+                if(pendingGames[i].host == s.username){
+                    pendingGames.splice(i, 1);
+                    break;
                 }
             }
-            return;
-        }
+            updateGameData();
+        });
 
-        //search name reservations for name
-        var taken = false;
-        for(var key in nameReservations) {
-            taken = nameReservations[key] == nameMsg.name || taken;
-        }
+        s.on('join game', function(hname){
+            pendingGames.forEach(function(game){
+                if(game.host == hname){
+                    game.join(s); 
+                    if(game.ready())
+                        launchGame(game);
+                }else{
+                    game.leave(s);
+                } 
+            });
+            updateGameData();
+        });
 
-        if(taken){
-            socket.emit('name taken',{});
-        }else{
-            cookies = parseCookies(nameMsg.cookies);
-            nameReservations[cookies.id] = nameMsg.name;
-            socket.uid = cookies.id;
-            lobby.joinRoom(socket, nameMsg.name);
-            socket.emit('update pending games',getGameData());
-        }
-    });
 
-    socket.on('disconnect', function(){
-        socketList.remove(socket);
-        lobby.leaveRoom(socket);
-    });
+        s.on('disconnect', function(){
+            lobby.leaveRoom(s);
+        });
 
-    socket.on('create game', function(data){
-        settings = querystring.parse(data);
-        var rpsG = rps(gameNSP, settings);
-        var game = PGame(socket,rpsG);
-        
-        pendingGames.push(game);
+        s.on('create game', function(data){
+            var settings = querystring.parse(data.settings);
+            var mod = gmoduleByName(data.type);
+            var game = mod.module(gameNSP, s, settings);
+            console.log(game.test());
+            console.log('wat');
+            var gameManager = PGame(s,game);
+            
+            pendingGames.push(gameManager);
 
-        socket.emit('game created', {});
-        updateGameData();
-    });
+            s.emit('game created', {});
+            updateGameData();
+        });
 
-    socket.on('new game', function(){
-        fs.readFile(__dirname + '/games/rps/settings.html','utf8',function(err,data){
-            socket.emit('new game form', data);
+        s.on('new game', function(name){
+            var mod = gmoduleByName(name); 
+            if(mod == null){
+                s.emit('bad game name',{});
+                return;
+            }
+            fs.readFile(mod.settingsForm,'utf8',function(err,data){
+                s.emit('new game form', data);
+            });
         });
     });
-
-    socket.emit('cookie check',{});
 });
 
 http.listen(3000, function(){

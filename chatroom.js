@@ -11,13 +11,13 @@ module.exports = function(nsp,room){
 
             names.push(name);
             socket.username = name;
-            socket.emit('named', {'name': name, 'users': names, 'msgs': recentMsgs});
+            socket.emit('joined lobby', {'name': name, 'users': names, 'msgs': recentMsgs});
+            console.log(names);
             nsp.to(room).emit('user joined', name);
 
             socket.on('chat message', function(msg){
                 var m = {'msg':msg, 'sender': name};
                 nsp.to(room).emit('chat message', m);
-                console.log(names);
                 recentMsgs.push(m);
             });
 
@@ -26,10 +26,8 @@ module.exports = function(nsp,room){
         },
 
         leaveRoom: function(socket){
-           if(socket.hasOwnProperty('username') && names.indexOf(socket.username) > -1){
-               names.splice(names.indexOf(socket.username, 1));
-               nsp.to(room).emit('user left', socket.username);
-           } 
+            names.splice(names.indexOf(socket.username, 1));
+            nsp.to(room).emit('user left', socket.username);
         }
     };
 }
