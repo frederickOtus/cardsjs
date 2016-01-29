@@ -20,9 +20,14 @@ var gameNSP = io.of('/game/');
 var games = [];
 var lobby = chatroom(io,'lobby');
 
-//helper functions
-function playerInGame(s){
-
+//helpers
+function activeGamesByGuid(guid){ 
+    for(var i = 0; i < games.length; i++){
+        if(games[i].players.indexOf(guid) > -1 && games[i].status == 'running'){
+            return games[i];
+        }
+    }
+    return null;
 }
 
 function gmoduleByName(name){
@@ -47,7 +52,7 @@ function launchGame(game){
 
     game.players.forEach(function(uid){
         var sock = socketByGuid(uid);
-        if(sock != null)
+        if(sock !== null)
             sock.emit('game starting');
     });
 
@@ -67,7 +72,7 @@ function getGameData(){
     pendingGames = games.filter(function(g) { return g.pending; });
     pendingGames.forEach(function(g){
         var players = [];
-        g.players.forEach(function(p){ s = socketByGuid(p); if(s != null) players.push(s.username); });
+        g.players.forEach(function(p){ s = socketByGuid(p); if(s !== null) players.push(s.username); });
         gdata.push({'host':g.host,'type':g.type, 'capacity': g.numPlayers,'filled':g.players.length, 'players':players});
     });
     return gdata;
@@ -75,7 +80,7 @@ function getGameData(){
 
 //paths
 app.get('/', function(req, res){
-    if(Object.keys(req.cookies).length == 0 || !req.cookies.hasOwnProperty('id')){
+    if(Object.keys(req.cookies).length === 0 || !req.cookies.hasOwnProperty('id')){
         var uid = uuid.v4();
         res.cookie('id', uid, {maxAge: 60*60*24});
     }else{
@@ -86,23 +91,26 @@ app.get('/', function(req, res){
     
 app.get('/play/', function(req, res){
 
-    if(Object.keys(req.cookies).length == 0 || !req.cookies.hasOwnProperty('id')){
+    if(Object.keys(req.cookies).length === 0 || !req.cookies.hasOwnProperty('id')){
         res.sendFile(__dirname + '/404.html');
     }else{
-        var file = null;
-        for(var i = 0; i < games.length; i++){
-            if(games[i].players.indexOf(req.cookies.id) > -1 && games[i].status == 'running'){
-                file = games[i].basePage;
-            }
-        }
-        if(file == null)
+        var game = activeGamesByGuid(req.cookies.id);
+        if(game === null)
             res.sendFile(__dirname + '/404.html');
         else
-            res.sendFile(file);
+            res.sendFile(game.basePage);
     }
 });
 
-//sockets
+//
+gameNSP.on('connection',function(socket){
+    handshake(socket, function(s){
+        var game = activeGamesByGuid(s.guid);
+        game.connect(s);
+    });
+});
+
+//lobby socket
 io.on('connection', function(socket){
     handshake(socket, function(s) { 
         lobby.joinRoom(s, s.username);
@@ -150,7 +158,7 @@ io.on('connection', function(socket){
 
         s.on('new game', function(name){
             var mod = gmoduleByName(name); 
-            if(mod == null){
+            if(mod === null){
                 s.emit('bad game name',{});
                 return;
             }

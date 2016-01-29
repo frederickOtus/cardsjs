@@ -8,7 +8,7 @@ var gametype = "";
  */
 $(document).ready(function(){
     var name = localStorage.getItem('name');
-    if(name != null){
+    if(name !== null){
         socket.emit('name', {'name': name, 'cookies':document.cookie});
     }
 });
@@ -114,7 +114,7 @@ socket.on('update pending games', function(games){
             $('#newgameform').hide();
         }
     });
-    if(lvm.mygame() == null){
+    if(lvm.mygame() === null){
         $('#creategame').show();
         $('#newgameform').show();
     }

@@ -25,5 +25,6 @@ module.exports = function(host){
         ready: function(){
             return true;
         }
-    }
-}
+
+    };
+};

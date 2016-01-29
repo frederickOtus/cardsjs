@@ -1,7 +1,7 @@
 function parseCookies (cs) {
     var list = {};
 
-    cs && cs.split(';').forEach(function( cookie ) {
+    t = cs && cs.split(';').forEach(function( cookie ) {
         var parts = cookie.split('=');
         list[parts.shift().trim()] = decodeURI(parts.join('='));
     });
@@ -17,7 +17,7 @@ module.exports = function(socket, callback){
         }
         cookies = parseCookies(nameMsg.cookies);
         //check to make sure has valid cookie
-        if(Object.keys(cookies).length == 0 || !cookies.hasOwnProperty('id')){
+        if(Object.keys(cookies).length === 0 || !cookies.hasOwnProperty('id')){
             socket.emit('bad cookie',{});
         }
         if(nameReservations.hasOwnProperty(cookies.id)){
@@ -45,4 +45,4 @@ module.exports = function(socket, callback){
             return;
         }
     });
-}
+};
