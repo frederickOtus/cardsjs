@@ -27,18 +27,20 @@
         </div>   
 
         <div id="game-list" data-bind="ifnot: mygame">
-            <div class="game_div" id="" data-bind="foreach: games">
-                <div>
-                    <div class="inline_div hostname" data-bind="text: host" style="font-style: italic;"></div>
-                    <div class="inline_div "> is hosting </div>
-                    <div class="inline_div " data-bind="text: type" style="font-style: italic;"></div>
-                </div>
-                <div>
-                    <div class="inline_div">Players: </div>
-                    <div class="inline_div" data-bind="text: filled"></div>
-                    <div class="inline_div"> out of </div>
-                    <div class="inline_div" data-bind="text: capacity"></div>
-                    <div class="inline_div"><button>Join!</button></div>
+            <div id="" data-bind="foreach: games">
+                <div class="game_div">
+                    <div>
+                        <div class="inline_div hostname" data-bind="text: host" style="font-style: italic;"></div>
+                        <div class="inline_div"> is hosting </div>
+                        <div class="inline_div" data-bind="text: type" style="font-style: italic;"></div>
+                    </div>
+                    <div>
+                        <div class="inline_div">Players: </div>
+                        <div class="inline_div" data-bind="text: filled"></div>
+                        <div class="inline_div"> out of </div>
+                        <div class="inline_div" data-bind="text: capacity"></div>
+                        <div class="inline_div"><button>Join!</button></div>
+                    </div>
                 </div>
             </div>
         </div>
