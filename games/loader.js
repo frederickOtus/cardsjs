@@ -21,6 +21,6 @@ module.exports = function(app, express){
         app.use('/' + path, express.static(__dirname + '/' + path + '/static'));
         return { "module": require(__dirname + '/' + path + '/server.js'),
                  "name": path,
-                 "settingsForm": __dirname + '/' + path + '/settings.html',}
+                 "settingsForm": __dirname + '/' + path + '/settings.html',};
     });
-}
+};
