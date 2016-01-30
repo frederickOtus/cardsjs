@@ -39,7 +39,7 @@ module.exports = function(host){
         },
 
         ready: function(){
-            return this.numPlayers == this.players.length;
+            return this.numPlayers == Object.keys(this.players).length;
         },
 
         bindListeners: function(s){
@@ -52,12 +52,12 @@ module.exports = function(host){
             this.players[s.guid] = s;
             var numConnected = 0;
             for (var key in this.players) {
-                if (players.hasOwnProperty(key) && players[key] !== null) {
+                if (this.players.hasOwnProperty(key) && this.players[key] !== null) {
                     numConnected++;
                 }
             } 
 
-            if(numConnected == this.players.length){
+            if(numConnected == Object.keys(this.players).length){
                 if(!this.started){
                     this.start();
                 }else{

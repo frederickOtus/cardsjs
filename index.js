@@ -21,9 +21,9 @@ var games = [];
 var lobby = chatroom(io,'lobby');
 
 //helpers
-function activeGamesByGuid(guid){ 
+function activeGameByGuid(guid){ 
     for(var i = 0; i < games.length; i++){
-        if(games[i].players.indexOf(guid) > -1 && games[i].status == 'running'){
+        if(games[i].players.hasOwnProperty(guid) && games[i].status == 'running'){
             return games[i];
         }
     }
@@ -50,7 +50,7 @@ function launchGame(game){
     if(!game.ready())
         return false;
 
-    game.players.forEach(function(uid){
+    Object.keys(game.players).forEach(function(uid){
         var sock = socketByGuid(uid);
         if(sock !== null)
             sock.emit('game starting');
@@ -95,7 +95,7 @@ app.get('/play/', function(req, res){
     if(Object.keys(req.cookies).length === 0 || !req.cookies.hasOwnProperty('id')){
         res.sendFile(__dirname + '/404.html');
     }else{
-        var game = activeGamesByGuid(req.cookies.id);
+        var game = activeGameByGuid(req.cookies.id);
         if(game === null)
             res.sendFile(__dirname + '/404.html');
         else
@@ -106,7 +106,7 @@ app.get('/play/', function(req, res){
 //
 gameNSP.on('connection',function(socket){
     handshake(socket, function(s){
-        var game = activeGamesByGuid(s.guid);
+        var game = activeGameByGuid(s.guid);
         game.connect(s);
     });
 });
