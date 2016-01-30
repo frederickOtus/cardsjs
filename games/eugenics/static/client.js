@@ -43,7 +43,8 @@ function beast()
 		console.log("no card selected");
 		return "nope";
 	}
-	window.alert([selected_card, "beast"]);
+	console.log([selected_card, "beast"]);
+	discard();
 }
 
 function breed()
@@ -52,7 +53,8 @@ function breed()
 		console.log("no card selected");
 		return "nope";
 	}
-	window.alert([selected_card, "breed"]);
+	console.log([selected_card, "breed"]);
+	discard();
 }
 
 function quest()
@@ -61,7 +63,8 @@ function quest()
 		console.log("no card selected");
 		return "nope";
 	}
-	window.alert([selected_card, "quest"]);
+	console.log([selected_card, "quest"]);
+	discard();
 }
 
 function attack()
@@ -70,7 +73,16 @@ function attack()
 		console.log("no card selected");
 		return "nope";
 	}
-	window.alert([selected_card, "attack"]);
+	console.log([selected_card, "attack"]);
+	discard();
+}
+
+function discard(){
+	if(!selected_card){
+		console.log("no card selected");
+		return "nope";
+	}
+	$("#" + selected_card).addClass("animated flipOutY");
 }
 
 $(".beast").on("click", beast);
