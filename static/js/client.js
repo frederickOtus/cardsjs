@@ -68,9 +68,12 @@ $('#mygamediv').on('click', 'button', function(){
     socket.emit('cancel game', {});
 });
 
-$('#game-list').on('click', 'button', function(){ 
-    var par = $('button','#game-list').parent().parent();
+$('#game-list').on('click', 'button', function(){
+    console.log("game-list button");
+    var par = $('button','#game-list').parent().parent().parent();
+    console.log(par);
     var hname = $('.hostname', par).html();
+    console.log(hname);
     socket.emit('join game', hname);
 });
 
