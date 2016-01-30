@@ -1,4 +1,4 @@
-var gameBase = require('/home/peter/Coding/nodejs/cardsjs/games/game.js'); 
+var gameBase = require('./../game.js'); 
 
 module.exports = function(nsp, host, settings){
     var game = gameBase(host);

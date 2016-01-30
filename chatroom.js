@@ -15,7 +15,7 @@ module.exports = function(nsp,room){
             nsp.to(room).emit('user joined', name);
 
             socket.on('chat message', function(msg){
-                var m = {'msg':msg, 'sender': name};
+                var m = {'msg': ": " + msg, 'sender': name};
                 nsp.to(room).emit('chat message', m);
                 recentMsgs.push(m);
             });
