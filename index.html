@@ -12,12 +12,13 @@
     </div>
 
     <div id="lobby">
+        <p class="message_line"> Current Users </p class="message_line">
         <ul id="user-list" data-bind="foreach: users">
-            <li><span data-bind="text: name"></span><span data-bind="text: is_me_msg"></span></li>
+            <li class="user_line"><span data-bind="text: name"></span><span data-bind="text: is_me_msg"></span></li>
         </ul>
 
         <ul id="message-list" data-bind="foreach: messages">
-            <li><em data-bind="text: sender"></em><span data-bind="text: msg"></span></li>
+            <li class="message_line"><em data-bind="text: sender"></em><span data-bind="text: msg"></span></li>
         </ul>
 
         <div id="mygamediv" data-bind="if: mygame">
@@ -26,17 +27,20 @@
         </div>   
 
         <div id="game-list" data-bind="ifnot: mygame">
-            <table>
-                <tbody id="" data-bind="foreach: games">
-                    <tr>
-                        <td class="hostname" data-bind="text: host"></td>
-                        <td data-bind="text: type"></td>
-                        <td data-bind="text: capacity"></td>
-                        <td data-bind="text: filled"></td>
-                        <td><button>Join!</button></td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="game_div" id="" data-bind="foreach: games">
+                <div>
+                    <div class="inline_div hostname" data-bind="text: host" style="font-style: italic;"></div>
+                    <div class="inline_div "> is hosting </div>
+                    <div class="inline_div " data-bind="text: type" style="font-style: italic;"></div>
+                </div>
+                <div>
+                    <div class="inline_div">Players: </div>
+                    <div class="inline_div" data-bind="text: filled"></div>
+                    <div class="inline_div"> out of </div>
+                    <div class="inline_div" data-bind="text: capacity"></div>
+                    <div class="inline_div"><button>Join!</button></div>
+                </div>
+            </div>
         </div>
 
         <div id="game-creation">
