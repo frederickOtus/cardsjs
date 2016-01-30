@@ -7,3 +7,12 @@ $(document).ready(function(){
 
 socket.on('named', function(m){
 });
+
+socket.on('hand', function(m){
+    console.log(JSON.stringify(m));
+});
+
+socket.on('choose card', function(m){
+    console.log('Need to choose a card');
+});
+

@@ -1,11 +1,11 @@
 var gameBase = require('./../game.js'); 
 
 var cards = [cardSacrifice, cardLearnViolin, cardOubliette, cardWhosYourDaddy];
-var gameStates = { 'Setup': 0, 'PlayCard': 1, 'Resolve': 2, 'EndRound': 3};
+var GS = { 'setup': 0, 'playCard': 1, 'resolve': 2, 'endRound': 3};
 
 function startingDeck(){
     var deck = [];
-    $.each(cards, function(c){
+    cards.forEach(function(c){
         deck.push(new c());
         deck.push(new c());
     });
@@ -26,12 +26,16 @@ function shuffleDeck(oldDeck){
     return newDeck;
 }
 
-function playerState(sock){
+function playerState(deck){
     var self = this;
-    self.deck = [];
+    self.deck = deck;
     self.hand = [];
     self.discard = [];
     self.socket = [];
+
+    self.draw = function(n){
+        self.hand = self.hand.concat(self.deck.splice(0, n));
+    };
 }
 
 
@@ -42,6 +46,7 @@ module.exports = function(nsp, host, settings){
     game.numPlayers = settings.numPlayers;
     game.bestOf = settings.rounds;
     game.playerStates = {};
+    game.state = GS.setup;
 
     game.startingPlayer = 0;
     game.changeStartingPlayer = function(){
@@ -51,9 +56,14 @@ module.exports = function(nsp, host, settings){
     game.start = function(){
         game.started = true;
         console.log("Game started!");
-        //$.each(game.players, function(p){
-        //    game.playerStates[p] = new playerState(startingDeck());
-        //});
+        Object.keys(game.players).forEach(function(p){
+            game.playerStates[p] = new playerState(startingDeck());
+            game.playerStates[p].draw(4);
+            game.players[p].emit('hand', game.playerStates[p].hand);
+            game.players[p].emit('choose card',{});
+        });
+
+        game.state = GS.playCard;
     };
 
     game.bindListeners = function(s){
