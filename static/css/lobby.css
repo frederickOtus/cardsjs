@@ -15,4 +15,26 @@ body { font: 13px Helvetica, Arial; }
     display: none;
 }
 
+.inline_div{
+	display: inline-block;
+}
 
+.game_div{
+	border: solid 1px grey;
+    border-radius: 5px;
+    display: inline-block;
+    padding: 5px;
+    margin: 5px;
+}
+
+.message_line{
+	padding-left: 5px;
+}
+
+#user-list{
+	border-bottom: 1px solid gray;
+}
+
+.user_line{
+	padding-left: 15px;
+}
