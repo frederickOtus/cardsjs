@@ -1,29 +1,30 @@
 module.exports = function(host){
+    var ps = {};
+    ps[host.guid] = null;
+
     return {
         started: false,
         paused: false,
         pending: true,
         host: host.username,
         numPlayers: 2,
-        players: [host.guid],
+        players: ps,
         connectedPlayers: [],
         join: function(socket){
-            this.players.forEach(function(pn){
-                if(pn == socket.guid)
-                    return false;
-            });
+            if(this.players.hasOwnProperty(socket.guid)){
+                return false;
+            }
 
-            this.players.push(socket.guid);
+            this.players[socket.guid] = null;
             return true;
         },
 
         leave: function(socket){
-            for(var i = 0; i < this.players.length; i++){
-                if(this.players[i] == socket.guid){
-                    this.players.splice(i,1);
-                    return true;
-                }
+            if(this.players.hasOwnProperty(socket.guid)){
+                delete this.players[socket.guid];
+                return true;
             }
+
             return false;
         },
 
@@ -41,24 +42,36 @@ module.exports = function(host){
             return this.numPlayers == this.players.length;
         },
 
+        bindListeners: function(s){
+            return;
+        },
+
         connect : function(s){
-            this.connectedPlayers.push(s.guid);
-            if(this.connectedPlayers.length == this.players.length){
+            this.bindListeners(s);
+
+            this.players[s.guid] = s;
+            var numConnected = 0;
+            for (var key in this.players) {
+                if (players.hasOwnProperty(key) && players[key] !== null) {
+                    numConnected++;
+                }
+            } 
+
+            if(numConnected == this.players.length){
                 if(!this.started){
                     this.start();
                 }else{
                     this.unpause();
                 }
             }
+
       
             var self = this; 
-
             s.on('disconnect', function(){
                 if(self.started && !self.paused){
                     self.pause();
                 }
-
-                self.connectedPlayers.splice(self.connectedPlayers.indexOf(s.guid),1);
+                self.players[s.guid] = null;
             });
         }
     };

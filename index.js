@@ -71,9 +71,10 @@ function getGameData(){
     gdata = [];
     pendingGames = games.filter(function(g) { return g.pending; });
     pendingGames.forEach(function(g){
+        var playerGUIDs = Object.keys(g.players);
         var players = [];
-        g.players.forEach(function(p){ s = socketByGuid(p); if(s !== null) players.push(s.username); });
-        gdata.push({'host':g.host,'type':g.type, 'capacity': g.numPlayers,'filled':g.players.length, 'players':players});
+        playerGUIDs.forEach(function(p){ s = socketByGuid(p); if(s !== null) players.push(s.username); });
+        gdata.push({'host':g.host,'type':g.type, 'capacity': g.numPlayers,'filled':players.length, 'players':players});
     });
     return gdata;
 }
