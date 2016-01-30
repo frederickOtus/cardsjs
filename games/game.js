@@ -1,8 +1,12 @@
 module.exports = function(host){
     return {
+        started: false,
+        paused: false,
         pending: true,
         host: host.username,
+        numPlayers: 2,
         players: [host.guid],
+        connectedPlayers: [],
         join: function(socket){
             this.players.forEach(function(pn){
                 if(pn == socket.guid)
@@ -22,9 +26,40 @@ module.exports = function(host){
             }
             return false;
         },
-        ready: function(){
-            return true;
-        }
 
+        unpause : function(){
+            this.paused = false;
+            console.log("Unpaused! Player returned");
+        },
+
+        pause : function(){
+            this.paused = true;
+            console.log("Paused! Player left");
+        },
+
+        ready: function(){
+            return this.numPlayers == this.players.length;
+        },
+
+        connect : function(s){
+            this.connectedPlayers.push(s.guid);
+            if(this.connectedPlayers.length == this.players.length){
+                if(!this.started){
+                    this.start();
+                }else{
+                    this.unpause();
+                }
+            }
+      
+            var self = this; 
+
+            s.on('disconnect', function(){
+                if(self.started && !self.paused){
+                    self.pause();
+                }
+
+                self.connectedPlayers.splice(self.connectedPlayers.indexOf(s.guid),1);
+            });
+        }
     };
 };
