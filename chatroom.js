@@ -1,23 +1,21 @@
 module.exports = function(nsp,room){
-    var names = new Array();
-    var recentMsgs = new Array();
-    var room = room;
-
     return {
+        names: [],
+        recentMsgs: [],
         joinRoom: function(socket, name, allowRepeat){
             if(!allowRepeat)
-                if(names.indexOf(name) > -1)
+                if(this.names.indexOf(name) > -1)
                     return false;
 
-            names.push(name);
+            this.names.push(name);
             socket.username = name;
-            socket.emit('joined lobby', {'name': name, 'users': names, 'msgs': recentMsgs});
+            socket.emit('joined lobby', {'name': name, 'users': this.names, 'msgs': this.recentMsgs});
             nsp.to(room).emit('user joined', name);
 
             socket.on('chat message', function(msg){
                 var m = {'msg': ": " + msg, 'sender': name};
                 nsp.to(room).emit('chat message', m);
-                recentMsgs.push(m);
+                this.recentMsgs.push(m);
             });
 
             socket.join(room);
@@ -25,8 +23,8 @@ module.exports = function(nsp,room){
         },
 
         leaveRoom: function(socket){
-            names.splice(names.indexOf(socket.username, 1));
+            this.names.splice(this.names.indexOf(socket.usernamer), 1);
             nsp.to(room).emit('user left', socket.username);
         }
     };
-}
+};
