@@ -35,7 +35,7 @@ function onCardSelect(clicked_id)
   $("#" + clicked_id).addClass("selected");
 }
 
-$(".card").on("click", onCardSelect(this.id));
+$(".card").on("click", function(){onCardSelect(this.id)});
 
 function beast()
 {
