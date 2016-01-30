@@ -83,23 +83,29 @@ function getGameData(){
 app.get('/', function(req, res){
     if(Object.keys(req.cookies).length === 0 || !req.cookies.hasOwnProperty('id')){
         var uid = uuid.v4();
-        res.cookie('id', uid, {maxAge: 60*60*24});
+        res.cookie('id', uid, {maxAge: 60*60*24*1000});
+        console.log("New id: " + uid);
     }else{
-        res.cookie('id', req.cookies.id, {maxAge: 60*60*24});
+        res.cookie('id', req.cookies.id, {maxAge: 60*60*24*1000});
     }
     res.sendFile(__dirname + '/index.html');
 });
     
 app.get('/play/', function(req, res){
+    console.log(JSON.stringify(req.cookies));
 
     if(Object.keys(req.cookies).length === 0 || !req.cookies.hasOwnProperty('id')){
+        console.log("404 -- no cookie");
         res.sendFile(__dirname + '/404.html');
     }else{
         var game = activeGameByGuid(req.cookies.id);
-        if(game === null)
+        if(game === null){
+            console.log("404 -- no active game");
             res.sendFile(__dirname + '/404.html');
-        else
+        }
+        else{
             res.sendFile(game.basePage);
+        }
     }
 });
 

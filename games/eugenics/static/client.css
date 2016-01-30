@@ -1,0 +1,84 @@
+div {
+  color: orange;
+  display: flex;
+}
+
+.team {
+  background-color: blue;
+}
+
+.enemy1 {
+  background-color: green;
+}
+
+.enemy2 {
+  background-color: purple;
+}
+
+.enemy3 {
+  background-color: teal;
+}
+
+.beast {
+  background-color: red;
+  width: 25%;
+}
+
+.breed {
+  background-color: purple;
+  width: 25%;
+}
+
+.quest {
+  background-color: orange;
+  color: blue;
+  width: 25%;
+}
+
+.attack {
+  background-color: green;
+  width: 25%;
+}
+
+.card {
+  max-width: 400px;
+  max-height: 300px;
+  width: 25%;
+  box-sizing: border-box;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.selected {
+  border: 5px solid;
+  border-color: Gold;
+}
+
+.body-div {
+  max-width: 66%;
+  margin-right: auto;
+  margin-left: auto;
+  display: flex;
+}
+
+.stats {
+  display: flex;
+}
+
+.stats-block {
+  width: 25%;
+  display: inline-block;
+  
+}
+
+.ascensions {
+  height: 50px;
+  box-sizing: border-box;
+  border-color: 
+}
+
+.ascensions-block {
+  width: 25%;
+  display: inline-block;
+  
+}

@@ -1,12 +1,56 @@
 <html>
 <head>
     <title>Fantasy Kingdom Eugenics Simulator</title>
-    <link id="primary-style" rel="stylesheet" type="text/css" href="/css/nameselect.css">
 </head>
 <body>
 
-    <h1>Fantasy Kingdom Eugenics Simulator</h2>
+  <div class="body-div ascensions">
+  <!-- Ascensions -->
+    <div class="team ascensions-block">Griffendor</div>
+    <div class="enemy1 ascensions-block">Slyverin</div>
+    <div class="enemy2 ascensions-block">Hufflepuff</div>
+    <div class="enemy3 ascensions-block">Ravenclaw</div>
+  </div>
+  
+  <div class="body-div stats">
+    <!-- family Stats -->
+    <div class="team stats-block">Team</div>
+    <div class="enemy1 stats-block">Enemy1</div>
+    <div class="enemy2 stats-block">Enemy2</div>
+    <div class="enemy3 stats-block">Enemy3</div>
+  </div>
+  
+  <div class="body-div">
+    <!-- Card block -->
+    <img class="card" id="1" onclick="onCardSelect(this.id)" src="http://byt.wpengine.netdna-cdn.com/wp-content/uploads/2014/01/ClCxiIc.jpg" />
+    <img class="card" id="2" onclick="onCardSelect(this.id)" src="http://byt.wpengine.netdna-cdn.com/wp-content/uploads/2014/01/ClCxiIc.jpg"/>
+    <img class="card" id="3" onclick="onCardSelect(this.id)" src="http://byt.wpengine.netdna-cdn.com/wp-content/uploads/2014/01/ClCxiIc.jpg" />
+    <img class="card" id="4" onclick="onCardSelect(this.id)" src="http://byt.wpengine.netdna-cdn.com/wp-content/uploads/2014/01/ClCxiIc.jpg"/>
+  </div>
+  
+  <div class="body-div">
+    <div class="beast" onclick="beast()">
+      <!-- Feed THE BEAST -->
+      FEED THE BEAST
+    </div>
 
+    <div class="breed" onclick="breed()">
+      <!-- Feed THE BEAST -->
+      Throw them into the breeding pool!
+    </div>
+
+    <div class="quest" onclick="quest()">
+      <!-- PLAY CARD -->
+      Go Questing!
+    </div>
+
+    <div class="attack" onclick="attack()">
+      <!-- PLAY CARD -->
+      Attack!
+    </div>
+  </div>
+
+    <link rel="stylesheet" type="text/css" href="/eugenics/client.css">
     <script src="/js/socket.io.js"></script>
     <script src="/js/jquery.js"></script>
     <script src="/js/knockout.js"></script>
