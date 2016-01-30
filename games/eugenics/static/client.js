@@ -16,3 +16,6 @@ socket.on('choose card', function(m){
     console.log('Need to choose a card');
 });
 
+socket.on('phase', function(m){
+    console.log("Phase: " + m);
+});

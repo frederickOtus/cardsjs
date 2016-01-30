@@ -1,41 +1,38 @@
 var gameBase = require('./../game.js'); 
 
-var cards = [cardSacrifice, cardLearnViolin, cardOubliette, cardWhosYourDaddy];
-var GS = { 'setup': 0, 'playCard': 1, 'resolve': 2, 'endRound': 3};
+var cards = [ function(){ this.name = "Mercenary"; this.img = ""; this.muscle = 3; this.mysticality = 1; this.moxie = 2 ;},
+              function(){ this.name = "Mage"; this.img = ""; this.muscle = 1; this.mysticality = 2; this.moxie = 1 ;},
+              function(){ this.name = "Thief"; this.img = ""; this.muscle = 2; this.mysticality = 1; this.moxie = 3 ;},
+              function(){ this.name = "Soldier"; this.img = ""; this.muscle = 3; this.mysticality = 1; this.moxie = 1;},
+              function(){ this.name = "Seer"; this.img = ""; this.muscle = 1; this.mysticality = 3; this.moxie = 2;},
+              function(){ this.name = "Gambler"; this.img = ""; this.muscle = 1; this.mysticality = 1; this.moxie = 3;},
+              function(){ this.name = "Knight"; this.img = ""; this.muscle = 3; this.mysticality = 1; this.moxie = 3;},
+              function(){ this.name = "Conjuror"; this.img = ""; this.muscle = 1; this.mysticality = 3; this.moxie = 3;},
+              function(){ this.name = "Red Mage"; this.img = ""; this.muscle = 3; this.mysticality = 3; this.moxie = 1;} ];
 
-function startingDeck(){
-    var deck = [];
-    cards.forEach(function(c){
-        deck.push(new c());
-        deck.push(new c());
-    });
 
-   return shuffleDeck(deck);
-}
+var chanllenges = {"muscle": 0, "moxie":1, "mysticality":2 };
 
 function getRandomInt(min, max) {
       return Math.floor(Math.random() * (max - min)) + min;
 }
 
-function shuffleDeck(oldDeck){
-    var newDeck = [];        
-    while(oldDeck.length > 0){
-        var ind = getRandomInt(0, oldDeck.length);
-        newDeck.push(oldDeck.splice(ind, 1)[0]);
+function shuffle(arr){
+    var newArr = [];        
+    while(arr.length > 0){
+        var ind = getRandomInt(0, arr.length);
+        newArr.push(arr.splice(ind, 1)[0]);
     }
-    return newDeck;
+    return newArr;
 }
 
-function playerState(deck){
+function playerState(){
     var self = this;
-    self.deck = deck;
     self.hand = [];
-    self.discard = [];
-    self.socket = [];
+    self.breedTokens = 0;
+    self.ascensions = 0;
 
-    self.draw = function(n){
-        self.hand = self.hand.concat(self.deck.splice(0, n));
-    };
+    self.nextPlay = -1;
 }
 
 
@@ -46,69 +43,100 @@ module.exports = function(nsp, host, settings){
     game.numPlayers = settings.numPlayers;
     game.bestOf = settings.rounds;
     game.playerStates = {};
-    game.state = GS.setup;
 
+    game.ascendChallenge = getRandomInt(0,3);
     game.startingPlayer = 0;
     game.changeStartingPlayer = function(){
         game.startingPlayer = (game.startingPlayer + 1) % game.numPlayers;
+    };
+
+    game.broadcast = function(name, payload){
+        Object.keys(game.players).forEach(function(p){
+            game.players[p].emit(name, payload);
+        });
     };
 
     game.start = function(){
         game.started = true;
         console.log("Game started!");
         Object.keys(game.players).forEach(function(p){
-            game.playerStates[p] = new playerState(startingDeck());
-            game.playerStates[p].draw(4);
-            game.players[p].emit('hand', game.playerStates[p].hand);
-            game.players[p].emit('choose card',{});
+            game.playerStates[p] = new playerState();
         });
 
-        game.state = GS.playCard;
+
+        game.broadcast("phase", "start");
+        var somoneWon = false;
+        while(!somoneWon){
+            game.newRound();
+            game.breedTokens();
+            for(var i = 0; i < 3; i++){
+                game.playCards();
+            }
+            game.ascend();
+        }
+        game.end();
+    };
+
+    game.newRound = function(){
+        game.broadcast("phase", "round");
+        var newDeck = [];
+    
+        cards.forEach(function(c) { newDeck.push(new c()); });
+        newDeck = shuffle(newDeck); 
+        
+        Object.keys(game.players).forEach(function(p){
+            game.playerStates[p].hand = newDeck.splice(0,4);
+            game.players[p].emit("hand", game.playerStates[p].hand);
+        });
+
+    };
+
+    game.breedTokens = function(){
+        game.broadcast("phase", "breed");
+        console.log("not implemented yet");
+    };
+    
+    game.playCards = function(){
+        game.broadcast("phase", "play");
+
+        var ready = function(p){
+            var count = 0; 
+            Object.keys(game.players).forEach(function(p){
+                if(game.playerStates[p].nextPlay >= 0){ //TODO: error occur if player chooses invalid move, should validate here
+                    count++;
+                }
+            });
+
+            return count == game.numPlayers;
+        };
+
+        while(!ready()){}
+
+        Object.keys(game.players).forEach(function(p){
+            var play = game.playerStates[p].nextPlay;
+            console.log(game.players[p].username + " played " + play);
+        });
+
+    };
+
+    game.ascend = function() {
+        game.broadcast("phase", "ascend");
+        var i = getRandomInt(0, game.numPlayers);
+        Object.keys(game.players)[i].ascensions++;
+    };
+
+    game.end = function(){
+        game.broadcast("phase", "end");
+        console.log("game over");
     };
 
     game.bindListeners = function(s){
-
+        s.on('play card', function(){
+            //if(game.state == GS.playCard){
+                //TODO manage play and get next card
+           // }
+        });
     };
 
     return game;
 };
-
-//
-function cardLearnViolin(){
-    var self = this;
-    this.name = "Learn Violin"; 
-    this.img = "";
-    this.play = function(player){
-        console.log("Play: " + self.name);
-    };
-}
-
-function cardSacrifice(){
-    var self = this;
-    this.name = "Sacrifice"; 
-    this.img = "";
-    this.play = function(player){
-        console.log("Play: " + self.name);
-    };
-    
-}
-
-function cardOubliette(){
-    var self = this;
-    this.name = "Toss them in the Oubliette"; 
-    this.img = "";
-    this.play = function(player){
-        console.log("Play: " + self.name);
-    };
-    
-}
-
-function cardWhosYourDaddy(){
-    var self = this;
-    this.name = "Who's Your Daddy?"; 
-    this.img = "";
-    this.play = function(player){
-        console.log("Play: " + self.name);
-    };
-    
-}
