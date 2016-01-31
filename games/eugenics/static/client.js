@@ -132,6 +132,26 @@ function minimizeFooter(){
 	}
 }
 
+function toggle_wait(){
+	if ($("#wait_overlay").is(":visible")){
+		// console.log("hide");
+		$("#wait_overlay").removeClass("rollIn");
+		$("#wait_overlay").addClass("rollOut");
+		$("#wait_overlay").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){$("#wait_overlay").hide();});
+		state = "";
+	} else {
+		// console.log("show");
+		state = "animating";
+		$("#wait_overlay").removeClass("rollOut");
+		$("#wait_overlay").addClass("rollIn");
+		$("#wait_overlay").show();
+		$("#wait_overlay").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){$("#wait_overlay").show();});
+	}
+	if(Math.random() < 0.01){
+		$("#wait_text").text("Wait for your next turn, my Lord!");
+	}
+}
+
 function footerLog(message){
 	$(".message_container").prepend("<li>· " + message + "</li>");
 }
