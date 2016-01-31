@@ -5,8 +5,9 @@ $(document).ready(function(){
     socket.emit('name', {'name': name, 'cookies':document.cookie});
     $('#formButton').click(function(e){
         e.preventDefault();
-        socket.emit('bribe', {'Marathon':0,'Dancing with the Stars': 0, 'Lifting':0 ,'Popularity Contest':0}) ;
+        console.log("WAT");
         toggle_form();
+        socket.emit('bribe', socket.emit('bribe', {'Marathon':0,'Dancing with the Stars': 0, 'Lifting':0 ,'Popularity Contest':0, 'Not Getting Assassinated':0, 'Staring Contest':0}));
         return false;
     });
 });
@@ -50,8 +51,7 @@ socket.on('event result', function(m){
 });
 
 socket.on('acension winner', function(m){
-    console.log("winner: " + m.winner + " (" + m.score + ")");
-
+    footerLog("Ascension winner: " + m.winner + " (" + m.score + ")");
 });
 
 socket.on('event winner', function(m){
@@ -181,9 +181,6 @@ function toggle_form(){
         $("#wait_overlay").show();
         $("#wait_overlay").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){$("#wait_overlay").show();});
     }
-    // if(Math.random() < 0.01){
-    //     $("#form_text").text("Wait for your next turn, my Lord!");
-    // }
 }
 
 function refreshHand(array_of_arrays){

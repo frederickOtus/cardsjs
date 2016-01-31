@@ -302,7 +302,6 @@ module.exports = function(nsp, host, settings){
                 }
             }
             var traits = game.playerStates[p].hand[ind];
-            console.log(JSON.stringify(traits));
             game.playerStates[p].discard.push(traits);
         });
         
