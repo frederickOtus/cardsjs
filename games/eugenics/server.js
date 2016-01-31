@@ -1,18 +1,15 @@
 var gameBase = require('./../game.js'); 
 
-var cards = [ function(){ this.name = "Mercenary"; this.img = ""; this.muscle = 3; this.mysticality = 1; this.moxie = 2 ;},
-              function(){ this.name = "Mage"; this.img = ""; this.muscle = 1; this.mysticality = 2; this.moxie = 1 ;},
-              function(){ this.name = "Thief"; this.img = ""; this.muscle = 2; this.mysticality = 1; this.moxie = 3 ;},
-              function(){ this.name = "Soldier"; this.img = ""; this.muscle = 3; this.mysticality = 1; this.moxie = 1;},
-              function(){ this.name = "Seer"; this.img = ""; this.muscle = 1; this.mysticality = 3; this.moxie = 2;},
-              function(){ this.name = "Gambler"; this.img = ""; this.muscle = 1; this.mysticality = 1; this.moxie = 3;},
-              function(){ this.name = "Knight"; this.img = ""; this.muscle = 3; this.mysticality = 1; this.moxie = 3;},
-              function(){ this.name = "Conjuror"; this.img = ""; this.muscle = 1; this.mysticality = 3; this.moxie = 3;},
-              function(){ this.name = "Red Mage"; this.img = ""; this.muscle = 3; this.mysticality = 3; this.moxie = 1;} ];
+var gtraits = [];
+var btraits = [];
+var houses = [
+    {name:'Alpha', startTraits: ["legs","legs"]},
+    {name:'Beta', startTraits: ["arms","arms"]},
+    {name:'Gamma', startTraits: ["eyes","eyes"]},
+    {name:'Delta', startTraits: ["nose","nose"]},
+];
 
-
-var chanllenges = {"muscle": 0, "moxie":1, "mysticality":2 };
-var wfBlocks = {"none": 0, "breed": 1, "play": 2 };
+var wfBlocks = {"none": 0, "play": 1 };
 
 function getRandomInt(min, max) {
       return Math.floor(Math.random() * (max - min)) + min;
@@ -27,14 +24,41 @@ function shuffle(arr){
     return newArr;
 }
 
-function playerState(){
+function nextGen(player){
+
+    var traits = [].concat.apply([], player.discard); //collapses a list of lists
+    var newGen = [[],[],[],[]];
+
+    traits.forEach(function(t){
+        var tmp = [];
+        while(true){
+            if(newGen.length === 0){
+                newGen = tmp;
+                return;
+            }
+            var i = getRandomInt(0, newGen.length);
+            if(newGen[i].indexOf(t) > -1){
+                tmp.push(newGen.splice(i,1)); 
+            }else{
+                newGen[i].push(t);
+                newGen = newGen.concat(tmp);
+                return;
+            }
+        }
+    });
+
+    return newGen;
+}
+
+function playerState(house){
     var self = this;
+    self.house = house;
     self.hand = [];
-    self.breedTokens = 0;
+    self.discard = [];
     self.ascensions = 0;
 
     self.played = null;
-    self.breeded = true;
+    self.decision = null;
 }
 
 
@@ -48,12 +72,6 @@ module.exports = function(nsp, host, settings){
 
     game.wfp = wfBlocks.none;
 
-    game.ascendChallenge = getRandomInt(0,3);
-    game.startingPlayer = 0;
-    game.changeStartingPlayer = function(){
-        game.startingPlayer = (game.startingPlayer + 1) % game.numPlayers;
-    };
-
     game.broadcast = function(name, payload){
         Object.keys(game.players).forEach(function(p){
             game.players[p].emit(name, payload);
@@ -64,9 +82,10 @@ module.exports = function(nsp, host, settings){
         game.started = true;
         console.log("Game started!");
         Object.keys(game.players).forEach(function(p){
-            game.playerStates[p] = new playerState();
+            var house = houses.splice(getRandomInt(0,houses.length),1)[0];
+            game.playerStates[p] = new playerState(house);
+            game.playerStates[p].discard.push(house.startTraits);
         });
-
 
         game.broadcast("phase", "start");
         game.newRound();
@@ -74,39 +93,17 @@ module.exports = function(nsp, host, settings){
 
     game.newRound = function(){
         game.broadcast("phase", "round");
-        var newDeck = [];
-    
-        cards.forEach(function(c) { newDeck.push(new c()); });
-        newDeck = shuffle(newDeck); 
-        
+
         Object.keys(game.players).forEach(function(p){
-            game.playerStates[p].hand = newDeck.splice(0,4);
-            game.playerStates[p].breeded = false;
+            game.playerStates[p].hand = nextGen(game.playerStates[p]);
+            game.playerStates[p].played = false;
             game.players[p].emit("hand", game.playerStates[p].hand);
         });
-        game.wfp = wfBlocks.breed;
-        game.broadcast("phase", "breed");
+        game.wfp = wfBlocks.play;
+        game.broadcast("phase", "play");
     };
 
     game.bindListeners = function(s){
-        s.on('breed', function(m){
-            if(game.wfp == wfBlocks.breed){
-                game.playerStates[s.guid].breeded = true;
-
-                var done = true;
-                Object.keys(game.players).forEach(function(p){
-                    done  = done && game.playerStates[p].breeded;
-                });
-
-                if(done){
-                    Object.keys(game.players).forEach(function(p){
-                        game.playerStates[p].played = null;
-                    });
-                    game.wfp = wfBlocks.play;
-                    game.broadcast("phase", "play");
-                }
-            }
-        });
         
         s.on('play card', function(m){
             if(game.wfp == wfBlocks.play){
