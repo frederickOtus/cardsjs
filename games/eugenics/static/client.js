@@ -23,9 +23,12 @@ socket.on("phase", function(m){
 // Unlimited Card Works
 
 var selected_card = "";
+var state = "";
 
 function onCardSelect(clicked_id)
 {
+	if (state == "animating") {return;};
+
   console.log(clicked_id);
   selected_card = clicked_id;
 
@@ -86,8 +89,24 @@ function discard(){
 		console.log("no card selected");
 		return "nope";
 	}
-	$("#" + selected_card).addClass("animated flipOutY");
+	state = "animating";
+	played_card = selected_card;
+	$("#" + selected_card).addClass("animated fadeOutUp");
+	$("#" + selected_card).one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', draw);
 }
+
+function draw(){
+	if(!selected_card){
+		console.log("Play a card first!");
+		return false;
+	}
+	// Change Image Here:
+	$("#" + selected_card).removeClass("animated fadeOutUp");
+	$("#" + selected_card).addClass("animated fadeInUp");
+	state = "";
+}
+
+$(".draw").on("click", draw);
 
 $(".beast").on("click", beast);
 $(".breed").on("click", breed);

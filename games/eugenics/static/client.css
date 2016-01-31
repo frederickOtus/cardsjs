@@ -47,6 +47,7 @@ div {
   box-sizing: border-box;
   margin-right: auto;
   margin-left: auto;
+  padding:5px;
 }
 
 .selected {
@@ -68,7 +69,6 @@ div {
 .stats-block {
   width: 25%;
   display: inline-block;
-  
 }
 
 .ascensions {
@@ -80,5 +80,16 @@ div {
 .ascensions-block {
   width: 25%;
   display: inline-block;
-  
+}
+
+.action{
+  border-radius: 10px;
+  margin: 5px;
+  padding: 5px;
+}
+
+.draw{
+  padding: 5px;
+  background-color: gray;
+  display: inline-block;
 }
