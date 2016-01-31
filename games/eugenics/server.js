@@ -1,7 +1,6 @@
 var gameBase = require('./../game.js'); 
 
 var wfBlocks = {"none": 0, "play": 1, "bribes": 2, "gameover": 3};
-
 var gtraits = ['Legs','Blue blood','Friends with a wizard','Self-healing','Master archer','Great kisser', 'Knows Their Own Myers-Briggs','Third eye','Animal ken','Flowing locks','Inhuman Stamina','Can\'t Blink'];
 var btraits = ['IBS','Bad at squash','Need special pants','Weak Immune System','Racist','Magical IBS','Dank Memes','Meh','Chronic Plague-Haver\'s Syndrome','Early Baldman\'s Hair','Awkward Around Unfamiliars','Unweildy Long Name','Blind in Both Ears'];
 var events = [
@@ -180,13 +179,13 @@ module.exports = function(nsp, host, settings){
                 var cost = bribeCost(m);
                 if(cost == -1){
                     s.emit('bad bribe', 'cannot do more than +3');
-                    return;
+                    game.playerStates[s.guid].bribed = {'Marathon':0,'Dancing with the Stars': 0, 'Lifting':0 ,'Popularity Contest':0, 'Not Getting Assassinated':0, 'Staring Contest':0};
                 }else if(cost >  game.playerStates[s.guid].money){
                     s.emit('bad bribe', 'you do not have enough money'); 
-                    return;
+                    game.playerStates[s.guid].bribed = {'Marathon':0,'Dancing with the Stars': 0, 'Lifting':0 ,'Popularity Contest':0, 'Not Getting Assassinated':0, 'Staring Contest':0};
+                }else{
+                    game.playerStates[s.guid].bribed = m;
                 }
-
-                game.playerStates[s.guid].bribed = m;
 
                 var done = true;
                 Object.keys(game.players).forEach(function(p){
@@ -302,7 +301,9 @@ module.exports = function(nsp, host, settings){
                     break;
                 }
             }
-            game.playerStates[p].discard.push(game.playerStates[p].hand[ind]);
+            var traits = game.playerStates[p].hand[ind];
+            console.log(JSON.stringify(traits));
+            game.playerStates[p].discard.push(traits);
         });
         
         

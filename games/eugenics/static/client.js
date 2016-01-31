@@ -40,12 +40,12 @@ socket.on("feed", function(m){
 socket.on("trade", function(m){
     footerLog("Haha, Capitolism! You now have " + m + " monies!"); 
 });
-socket.on("quest", function(m){
-    footerLog("Quest! You've added " + JSON.stringify(m) + "to your gene pool!"); 
+socket.on("breed", function(m){
+    footerLog("Your virility has added " + JSON.stringify(m) + "to your gene pool!"); 
 });
 
 socket.on('event result', function(m){
-    //console.log(m.name + ' Result: ' + m.score);
+    footerLog(m.name + ' Result: ' + m.score);
 });
 
 socket.on('acension winner', function(m){
@@ -109,7 +109,7 @@ function play(action){
     if(!selected_card || state == "animating" || $("#" + i).hasClass("used")){
         console.log("Select a card first!");
         return false;
-    }
+}
     discard(selected_card, function(){
         $("#" + selected_card).addClass("used");
         $("#" + selected_card).removeClass("selected");
@@ -177,6 +177,7 @@ function toggle_wait(){
 }
 
 function toggle_form(){
+    console.log("WAT");
     if ($("#form_overlay").is(":visible")){
         // console.log("hide");
         $("#form_overlay").removeClass("rollIn");
