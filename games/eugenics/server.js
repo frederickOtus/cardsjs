@@ -37,7 +37,7 @@ function nextGen(player){
 
     var traits = [].concat.apply([], player.discard); //collapses a list of lists
     var newGen = [[],[],[],[]];
-
+    traits = traits.filter(function(t) { return t !== null; });
 
     traits.forEach(function(t){
         var tmp = [];
@@ -166,6 +166,7 @@ module.exports = function(nsp, host, settings){
                     if(game.cardsPlayed == 3){
                         game.wfp = wfBlocks.bribes;
                         game.broadcast("phase", "bribe");
+                        console.log("wat");
                         game.broadcast(events, events);
                     }else{
                         game.broadcast("phase","play");
