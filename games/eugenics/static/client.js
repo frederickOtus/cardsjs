@@ -28,25 +28,28 @@ var state = "";
 function onCardSelect(clicked_id)
 {
 	if (state == "animating") {return;};
+	if (selected_card == clicked_id){
+		$("#" + selected_card).removeClass("selected");
+		selected_card = "";
+		return;
+	}
+	console.log(clicked_id);
+	selected_card = clicked_id;
 
-  console.log(clicked_id);
-  selected_card = clicked_id;
+	var cards = ["1", "2", "3", "4"];
 
-  var cards = ["1", "2", "3", "4"];
+	for (i = 0; i < cards.length; i++){
+		$("#" + cards[i]).removeClass("selected");
+	}
 
-  for (i = 0; i < cards.length; i++)
-    {
-      $("#" + cards[i]).removeClass("selected");
-    }
-
-  $("#" + clicked_id).addClass("selected");
+	$("#" + clicked_id).addClass("selected");
 }
 
 $(".card").on("click", function(){onCardSelect(this.id);});
 
 function beast()
 {
-	if(!selected_card){
+	if(!selected_card || state == "animating"){
 		console.log("no card selected");
 		return "nope";
 	}
@@ -56,7 +59,7 @@ function beast()
 
 function breed()
 {
-	if(!selected_card){
+	if(!selected_card || state == "animating"){
 		console.log("no card selected");
 		return "nope";
 	}
@@ -66,7 +69,7 @@ function breed()
 
 function quest()
 {
-	if(!selected_card){
+	if(!selected_card || state == "animating"){
 		console.log("no card selected");
 		return "nope";
 	}
@@ -76,7 +79,7 @@ function quest()
 
 function attack()
 {
-	if(!selected_card){
+	if(!selected_card || state == "animating"){
 		console.log("no card selected");
 		return "nope";
 	}
@@ -85,12 +88,11 @@ function attack()
 }
 
 function discard(){
-	if(!selected_card){
+	if(!selected_card || state == "animating"){
 		console.log("no card selected");
 		return "nope";
 	}
 	state = "animating";
-	played_card = selected_card;
 	$("#" + selected_card).addClass("animated fadeOutUp");
 	$("#" + selected_card).one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', draw);
 }
@@ -101,8 +103,10 @@ function draw(){
 		return false;
 	}
 	// Change Image Here:
+	$("#" + selected_card).removeClass("selected");
 	$("#" + selected_card).removeClass("animated fadeOutUp");
 	$("#" + selected_card).addClass("animated fadeInUp");
+	selected_card = "";
 	state = "";
 }
 
