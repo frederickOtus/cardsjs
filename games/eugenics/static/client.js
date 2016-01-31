@@ -16,6 +16,7 @@ socket.on('named', function(m){
 
 socket.on('hand', function(m){
     console.log(JSON.stringify(m));
+    //discardHand();
     refreshHand(m);
 });
 
@@ -50,6 +51,7 @@ socket.on('event result', function(m){
 
 socket.on('acension winner', function(m){
     console.log("winner: " + m.winner + " (" + m.score + ")");
+
 });
 
 socket.on('event winner', function(m){
@@ -91,18 +93,6 @@ function breed(){play("breed");}
 function quest(){play("quest");}
 
 function trade(){play("trade");}
-
-function refilHand(){
-    i = 1;
-    while(i <= 4){
-        if ($("#" + i).hasClass("used")) {
-            //change card here
-
-            draw(i);
-        }
-        i++;
-    }
-}
 
 function play(action){
     console.log([selected_card, action]);
@@ -177,35 +167,44 @@ function toggle_wait(){
 }
 
 function toggle_form(){
-    console.log("WAT");
-    if ($("#form_overlay").is(":visible")){
-        // console.log("hide");
-        $("#form_overlay").removeClass("rollIn");
-        $("#form_overlay").addClass("rollOut");
-        $("#form_overlay").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){$("#form_overlay").hide();});
+    if ($("#wait_overlay").is(":visible")){
+        console.log("hide");
+        $("#wait_overlay").removeClass("rollIn");
+        $("#wait_overlay").addClass("rollOut");
+        $("#wait_overlay").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){$("#wait_overlay").hide();});
         state = "";
     } else {
-        // console.log("show");
+        console.log("show");
         state = "animating";
-        $("#form_overlay").removeClass("rollOut");
-        $("#form_overlay").addClass("rollIn");
-        $("#form_overlay").show();
-        $("#form_overlay").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){$("#form_overlay").show();});
+        $("#wait_overlay").removeClass("rollOut");
+        $("#wait_overlay").addClass("rollIn");
+        $("#wait_overlay").show();
+        $("#wait_overlay").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){$("#wait_overlay").show();});
     }
-    if(Math.random() < 0.01){
-        $("#form_text").text("Wait for your next turn, my Lord!");
-    }
+    // if(Math.random() < 0.01){
+    //     $("#form_text").text("Wait for your next turn, my Lord!");
+    // }
 }
 
 function refreshHand(array_of_arrays){
 	id = 1;
 	while(id <= 4){
 		refreshCard(id, array_of_arrays[id - 1]);
+		draw(id);
+		id++;
+	}
+}
+
+function discardHand(){
+	id = 1;
+	while(id <= 4){
+		discard(id);
 		id++;
 	}
 }
 
 function refreshCard(id, traits){
+	$("#" + id).removeClass("used");
     $("#" + id + " .card_name").text(randomName);
     str = "";
     $.each(traits, function(x){
