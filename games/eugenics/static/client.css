@@ -91,6 +91,8 @@ div {
 .stats-block {
   width: 25%;
   display: inline-block;
+  padding: 5px 10px;
+  margin: 3px;
 }
 
 .ascensions {
@@ -102,7 +104,19 @@ div {
 .ascensions-block {
   width: 25%;
   display: inline-block;
+  background-size: 40px;
+  background-position: 180;
+  background-repeat: no-repeat;
+  border: 3px solid gray;
+  margin: 2px;
+  background-color: #ffffff;
+  padding: 5px 0px 0px 5px;
 }
+
+.ascensions-block.team{background-image: url("/eugenics/img/heart_emblem.png");}
+.ascensions-block.enemy1{background-image: url("/eugenics/img/lightning_emblem.png");}
+.ascensions-block.enemy2{background-image: url("/eugenics/img/shadow_emblem.png");}
+.ascensions-block.enemy3{background-image: url("/eugenics/img/water_emblem.png");}
 
 .action{
   border-radius: 5px;

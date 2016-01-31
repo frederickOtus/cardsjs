@@ -152,6 +152,23 @@ function toggle_wait(){
 	}
 }
 
+function refreshCard(id, traits){
+	$("#" + id + " .card_name").text(randomName);
+	str = "";
+	$.each(traits, function(x){
+		console.log(a[x]);
+		str += "<li>" + a[x] + "</li>";
+	});
+	if (str == "") {
+		str = "no traits lol";
+	};
+	$("#" + id + " .card_traits").html(str);
+}
+
+function randomName(){
+	return names[Math.floor((Math.random() * names.length))];
+}
+
 function footerLog(message){
 	$(".message_container").prepend("<li>· " + message + "</li>");
 }
@@ -164,3 +181,5 @@ $(".beast").on("click", beast);
 $(".breed").on("click", breed);
 $(".quest").on("click", quest);
 $(".attack").on("click", attack);
+
+var names = ['Grorik','Pendrus','Merlin','Merlina','Gryndolyn','Cancelot','Mainard','Merhild','Isabander','Thea','Williamina','Gregor','Gilpin','Rubbus','Renaud','Swetiue','Millicent','Ellyn','Benvolio','Romeo','Juliette','Romania','Julio','Cedric', "Bigger Luke"];
