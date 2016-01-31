@@ -117,7 +117,7 @@ function minimizeFooter(){
 }
 
 function footerLog(message){
-	$(".message_container").append("<li>· " + message + "</li>");
+	$(".message_container").prepend("<li> " + message + "</li>");
 }
 
 $(".arrow").on("click",minimizeFooter);

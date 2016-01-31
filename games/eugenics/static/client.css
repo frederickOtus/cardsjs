@@ -119,7 +119,7 @@ div {
 
 .message_container{
   padding: 5px 10px;
-  overflow: scroll;
+  overflow-y: scroll;
 }
 
 .arrow{
