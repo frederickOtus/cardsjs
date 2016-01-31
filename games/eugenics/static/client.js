@@ -20,6 +20,22 @@ socket.on("phase", function(m){
     console.log("phase: " + m);
 });
 
+socket.on('event result', function(m){
+    //console.log(m.name + ' Result: ' + m.score);
+});
+
+socket.on('acension winner', function(m){
+    console.log("winner: " + m.winner + " (" + m.score + ")");
+});
+
+socket.on('event winner', function(m){
+    //console.log("winner: " + JSON.stringify(m.winners) + " (" + m.score + ")");
+});
+
+socket.on('bad bribe', function(m){
+    console.log(m);
+});
+
 // Unlimited Card Works
 
 var selected_card = "";
@@ -28,7 +44,7 @@ var minimizedMessages = false;
 
 function onCardSelect(clicked_id)
 {
-	if (state == "animating") {return;};
+	if (state == "animating") {return;}
 	if (selected_card == clicked_id){
 		$("#" + selected_card).removeClass("selected");
 		selected_card = "";
@@ -59,7 +75,7 @@ function refilHand(){
 			//change card here
 
 			draw(i);
-		};
+		}
 		i++;
 	}
 }
@@ -105,7 +121,7 @@ function animate_card(id, removeClass, addClass, callback){
 }
 
 function minimizeFooter(){
-	if(minimizedMessages == true){
+	if(minimizedMessages === true){
 		$(".arrow").html("▼");
 		$(".footer").css("height", "200px");
 		minimizedMessages = false;
