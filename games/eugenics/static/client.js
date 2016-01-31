@@ -16,6 +16,10 @@ socket.on('choose card', function(m){
     console.log('Need to choose a card');
 });
 
+socket.on("phase", function(m){
+    console.log("phase: " + m);
+});
+
 // Unlimited Card Works
 
 var selected_card = "";
@@ -35,7 +39,7 @@ function onCardSelect(clicked_id)
   $("#" + clicked_id).addClass("selected");
 }
 
-$(".card").on("click", function(){onCardSelect(this.id)});
+$(".card").on("click", function(){onCardSelect(this.id);});
 
 function beast()
 {
