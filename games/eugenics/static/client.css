@@ -45,14 +45,32 @@ div {
 }
 
 .card {
-  max-width: 400px;
-  max-height: 300px;
+  display: inline-block;
+  width: 400px;
+  height: 300px;
   width: 25%;
   box-sizing: border-box;
   margin-right: auto;
   margin-left: auto;
   padding:5px;
+  border: 3px black solid;
+  background-color:#CCCCCC;
 }
+
+.card_name{
+  display: block;
+  padding: 5px;
+  color: #5C5C5C;
+  border-bottom: 1px black solid;
+}
+
+.card_traits{
+  display: inline-block;
+  padding-left: 5px;
+  color: #5C5C5C;
+  padding-top: 5px;
+}
+
 
 .selected {
   border: 5px solid;
@@ -73,6 +91,8 @@ div {
 .stats-block {
   width: 25%;
   display: inline-block;
+  padding: 5px 10px;
+  margin: 3px;
 }
 
 .ascensions {
@@ -84,7 +104,19 @@ div {
 .ascensions-block {
   width: 25%;
   display: inline-block;
+  background-size: 40px;
+  background-position: 180;
+  background-repeat: no-repeat;
+  border: 3px solid gray;
+  margin: 2px;
+  background-color: #ffffff;
+  padding: 5px 0px 0px 5px;
 }
+
+.ascensions-block.team{background-image: url("/eugenics/img/heart_emblem.png");}
+.ascensions-block.enemy1{background-image: url("/eugenics/img/lightning_emblem.png");}
+.ascensions-block.enemy2{background-image: url("/eugenics/img/shadow_emblem.png");}
+.ascensions-block.enemy3{background-image: url("/eugenics/img/water_emblem.png");}
 
 .action{
   border-radius: 5px;
@@ -126,4 +158,20 @@ div {
 .arrow{
   padding: 5px;
   display: inline-block;
+}
+
+#wait_overlay{
+  position: absolute;
+  width: 100%;
+  height: 150px;
+  z-index: 150;
+  background-color: red; 
+  position: absolute;
+  top: 100;
+  opacity: 0.80;
+}
+
+#wait_text{
+  margin: auto;
+  font-size:64;
 }

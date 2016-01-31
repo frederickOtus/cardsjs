@@ -58,20 +58,20 @@ var minimizedMessages = false;
 
 function onCardSelect(clicked_id)
 {
-	if (state == "animating") {return;}
-	if (selected_card == clicked_id){
-		$("#" + selected_card).removeClass("selected");
-		selected_card = "";
-		return;
-	}
-	console.log(clicked_id);
-	selected_card = clicked_id;
+    if (state == "animating") {return;}
+    if (selected_card == clicked_id){
+        $("#" + selected_card).removeClass("selected");
+        selected_card = "";
+        return;
+    }
+    console.log(clicked_id);
+    selected_card = clicked_id;
 
-	for (i = 1; i <= 4; i++){
-		$("#" + i).removeClass("selected");
-	}
+    for (i = 1; i <= 4; i++){
+        $("#" + i).removeClass("selected");
+    }
 
-	$("#" + clicked_id).addClass("selected");
+    $("#" + clicked_id).addClass("selected");
 }
 
 function feed(){play("feed");}
@@ -83,71 +83,108 @@ function quest(){play("quest");}
 function trade(){play("trade");}
 
 function refilHand(){
-	i = 1;
-	while(i <= 4){
-		if ($("#" + i).hasClass("used")) {
-			//change card here
+    i = 1;
+    while(i <= 4){
+        if ($("#" + i).hasClass("used")) {
+            //change card here
 
-			draw(i);
-		}
-		i++;
-	}
+            draw(i);
+        }
+        i++;
+    }
 }
 
 function play(action){
-	console.log([selected_card, action]);
-	if(!selected_card || state == "animating" || $("#" + i).hasClass("used")){
-		console.log("Select a card first!");
-		return false;
-	}
-	discard(selected_card, function(){
-		$("#" + selected_card).addClass("used");
-		$("#" + selected_card).removeClass("selected");
-		socket.emit("play card",[action, selected_card]);
-		selected_card = "";
-	});
-	socket.emit("play card",[action,selected_card]);
+    console.log([selected_card, action]);
+    if(!selected_card || state == "animating" || $("#" + i).hasClass("used")){
+        console.log("Select a card first!");
+        return false;
+    }
+    discard(selected_card, function(){
+        $("#" + selected_card).addClass("used");
+        $("#" + selected_card).removeClass("selected");
+        socket.emit("play card",[action, selected_card]);
+        selected_card = "";
+    });
+    socket.emit("play card",[action,selected_card]);
 }
 
 function draw(id){
-	animate_card(id, "fadeOutUp", "fadeInUp", function(){});
+    animate_card(id, "fadeOutUp", "fadeInUp", function(){});
 }
 
 function draw(id, callback){
-	animate_card(id, "fadeOutUp", "fadeInUp", callback);
+    animate_card(id, "fadeOutUp", "fadeInUp", callback);
 }
 
 function discard(id){
-	animate_card(id, "fadeInUp", "fadeOutUp", function(){});
+    animate_card(id, "fadeInUp", "fadeOutUp", function(){});
 }
 
 function discard(id, callback){
-	animate_card(id, "fadeInUp", "fadeOutUp", callback);
+    animate_card(id, "fadeInUp", "fadeOutUp", callback);
 }
 
 function animate_card(id, removeClass, addClass, callback){
-	if (typeof callback === 'undefined') { callback = function(){}; }
-	temp_id = "#" + id;
-	state = "animating";
-	$(temp_id).removeClass(removeClass);
-	$(temp_id).addClass("animated " + addClass);
-	$(temp_id).one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){state="";callback();});
+    if (typeof callback === 'undefined') { callback = function(){}; }
+    temp_id = "#" + id;
+    state = "animating";
+    $(temp_id).removeClass(removeClass);
+    $(temp_id).addClass("animated " + addClass);
+    $(temp_id).one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){state="";callback();});
 }
 
 function minimizeFooter(){
-	if(minimizedMessages === true){
-		$(".arrow").html("▼");
-		$(".footer").css("height", "200px");
-		minimizedMessages = false;
-	} else {
-		$(".arrow").html("▲");
-		$(".footer").css("height", "25px");
-		minimizedMessages = true;
-	}
+    if(minimizedMessages === true){
+        $(".arrow").html("▼");
+        $(".footer").css("height", "200px");
+        minimizedMessages = false;
+    } else {
+        $(".arrow").html("▲");
+        $(".footer").css("height", "25px");
+        minimizedMessages = true;
+    }
+}
+
+function toggle_wait(){
+    if ($("#wait_overlay").is(":visible")){
+        // console.log("hide");
+        $("#wait_overlay").removeClass("rollIn");
+        $("#wait_overlay").addClass("rollOut");
+        $("#wait_overlay").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){$("#wait_overlay").hide();});
+        state = "";
+    } else {
+        // console.log("show");
+        state = "animating";
+        $("#wait_overlay").removeClass("rollOut");
+        $("#wait_overlay").addClass("rollIn");
+        $("#wait_overlay").show();
+        $("#wait_overlay").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){$("#wait_overlay").show();});
+    }
+    if(Math.random() < 0.01){
+        $("#wait_text").text("Wait for your next turn, my Lord!");
+    }
+}
+
+function refreshCard(id, traits){
+    $("#" + id + " .card_name").text(randomName);
+    str = "";
+    $.each(traits, function(x){
+        console.log(a[x]);
+        str += "<li>" + a[x] + "</li>";
+    });
+    if (str == "") {
+        str = "no traits lol";
+    };
+    $("#" + id + " .card_traits").html(str);
+}
+
+function randomName(){
+    return names[Math.floor((Math.random() * names.length))];
 }
 
 function footerLog(message){
-	$(".message_container").prepend("<li>· " + message + "</li>");
+    $(".message_container").prepend("<li>· " + message + "</li>");
 }
 
 $(".arrow").on("click",minimizeFooter);
@@ -158,3 +195,5 @@ $(".feed").on("click", feed);
 $(".breed").on("click", breed);
 $(".quest").on("click", quest);
 $(".trade").on("click", trade);
+
+var names = ['Grorik','Pendrus','Merlin','Merlina','Gryndolyn','Cancelot','Mainard','Merhild','Isabander','Thea','Williamina','Gregor','Gilpin','Rubbus','Renaud','Swetiue','Millicent','Ellyn','Benvolio','Romeo','Juliette','Romania','Julio','Cedric', "Bigger Luke"];
