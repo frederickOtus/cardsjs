@@ -1,22 +1,24 @@
 var gameBase = require('./../game.js'); 
 
-var gtraits = ['Legs','Blue blood','Friends with a wizard','Self-healing','Master archer','Great kisser', 'Knows Their Own Myers-Briggs','Third eye'];
-var btraits = ['IBS','Bad at squash','Need special pants','Weak Immune System','Racist','Magical IBS','Dank Memes','Meh'];
+var wfBlocks = {"none": 0, "play": 1, "bribes": 2, "gameover": 3};
+
+var gtraits = ['Legs','Blue blood','Friends with a wizard','Self-healing','Master archer','Great kisser', 'Knows Their Own Myers-Briggs','Third eye','Animal ken','Flowing locks','Inhuman Stamina','Can\'t Blink'];
+var btraits = ['IBS','Bad at squash','Need special pants','Weak Immune System','Racist','Magical IBS','Dank Memes','Meh','Chronic Plague-Haver\'s Syndrome','Early Baldman\'s Hair','Awkward Around Unfamiliars','Unweildy Long Name','Blind in Both Ears'];
 var events = [
-    {'name': 'Marathon', 'boons': ['Legs',], 'banes':['IBS','Meh']},
-    {'name': 'Dancing with the Stars', 'boons': ['Friends with a wizard',], 'banes':['Need special pants','Magical IBS']},
-    {'name': 'Lifting', 'boons': ['Blue Blood',], 'banes':['Weak Immune System','Bad at squash']},
-    {'name': 'Popularity Contest', 'boons': ['Great kisser',], 'banes':['Racist','Dank Memes']},
+    {'name': 'Marathon', 'boons': ['Legs','Inhuman Stamina'], 'banes':['IBS','Meh']},
+    {'name': 'Dancing with the Stars', 'boons': ['Friends with a wizard','Knows Their Own Myers-Briggs'], 'banes':['Need special pants','Magical IBS']},
+    {'name': 'Lifting', 'boons': ['Blue Blood','Inhuman Stamina'], 'banes':['Weak Immune System','Bad at squash','Chronic Plague-Haver\'s Syndrome']},
+    {'name': 'Popularity Contest', 'boons': ['Great kisser','Blue blood','Flowing locks'], 'banes':['Racist','Dank Memes','IBS','Awkward Around Unfamiliars','Unweildy Long Name']},
+    {'name': 'Not Getting Assassinated', 'boons': ['Friends with a wizard', 'Self-healing', 'Third eye'], 'banes': ['Weak Immune System','IBS','Blue blood']},
+    {'name': 'Staring Contest','boons':['Can\'t Blink','Master Archer','Inhuman Stamina'],'banes':['Bad at Squash','Blind in Both Ears','Awkward Around Unfamiliars']}
 ];
 
 var houses = [
-    {name:'Alpha', startTraits: ["Legs","Legs"]},
-    {name:'Beta', startTraits: ["Blue Blood","Blue Blood"]},
-    {name:'Gamma', startTraits: ["Friends with a wizard","Friends with a wizard"]},
-    {name:'Delta', startTraits: ["nose","nose"]},
+    {name:'Alpha', startTraits: ['Legs','Legs','Animal ken','Knows Their Own Myers-Briggs','Racist']},
+    {name:'Beta', startTraits: ['Blue Blood','Blue Blood','Master archer','Great kisser','Great Kisser','Meh','Unweildy Long Name']},
+    {name:'Gamma', startTraits: ['Friends with a wizard','Friends with a wizard','Third eye','Flowing locks','Magical IBS','Dank Memes']},
+    {name:'Delta', startTraits: ['Knows Their Own Myers-Briggs','Self-healing','Master archer','Inhuman Stamina','Chronic Plague-Haver\'s Syndrome','Early Baldman\'s Hair']},
 ];
-
-var wfBlocks = {"none": 0, "play": 1, "bribes": 2, "gameover": 3};
 
 function getRandomInt(min, max) {
       return Math.floor(Math.random() * (max - min)) + min;
@@ -36,6 +38,7 @@ function nextGen(player){
     var traits = [].concat.apply([], player.discard); //collapses a list of lists
     var newGen = [[],[],[],[]];
 
+
     traits.forEach(function(t){
         var tmp = [];
         while(true){
@@ -45,7 +48,7 @@ function nextGen(player){
             }
             var i = getRandomInt(0, newGen.length);
             if(newGen[i].indexOf(t) > -1){
-                tmp.push(newGen.splice(i,1)); 
+                tmp.push(newGen.splice(i,1)[0]); 
             }else{
                 newGen[i].push(t);
                 newGen = newGen.concat(tmp);
@@ -53,7 +56,6 @@ function nextGen(player){
             }
         }
     });
-
     return newGen;
 }
 
@@ -113,7 +115,6 @@ module.exports = function(nsp, host, settings){
 
     game.start = function(){
         game.started = true;
-        console.log("Game started!");
         Object.keys(game.players).forEach(function(p){
             var house = houses.splice(getRandomInt(0,houses.length),1)[0];
             game.playerStates[p] = new playerState(house);
@@ -129,6 +130,7 @@ module.exports = function(nsp, host, settings){
 
         Object.keys(game.players).forEach(function(p){
             game.playerStates[p].hand = nextGen(game.playerStates[p]);
+            game.playerStates[p].discard = [];
             game.playerStates[p].played = null;
             game.players[p].emit("hand", game.playerStates[p].hand);
         });
@@ -139,7 +141,6 @@ module.exports = function(nsp, host, settings){
     game.bindListeners = function(s){
         
         s.on('play card', function(m){
-            console.log(m);
             if(game.wfp == wfBlocks.play){
                 if(game.playerStates[s.guid].hand[m[1]] === null){
                     s.emit('card already played', m);
@@ -204,7 +205,16 @@ module.exports = function(nsp, host, settings){
         var score = 0;
         var boonText = [];
         var baneText = []; 
-        game.playerStates[p].hand[0].forEach(function(t){
+        var ind = [];
+       
+        for(var i =0; i < game.playerStates[p].hand.length; i++){
+            if(game.playerStates[p].hand[i] !== 0){
+                ind = i;
+                break;
+            }
+        }
+
+        game.playerStates[p].hand[ind].forEach(function(t){
             if(ev.boons.indexOf(t) > -1){
                 score+=2;
                 boonText.push(t);
@@ -214,6 +224,7 @@ module.exports = function(nsp, host, settings){
                 baneText.push(t);
             }
         });
+        
         score += game.playerStates[p].bribed[ev.name];
         game.players[p].emit('event result', {'name': ev.name, 'score': score, 'boons': boonText, 'banes': baneText});
         return score;
@@ -281,6 +292,18 @@ module.exports = function(nsp, host, settings){
                 return;
             }
         });
+
+        Object.keys(game.players).forEach(function(p){
+            var ind = [];
+            for(var i =0; i < game.playerStates[p].hand.length; i++){
+                if(game.playerStates[p].hand[i] !== 0){
+                    ind = i;
+                    break;
+                }
+            }
+            game.playerStates[p].discard.push(game.playerStates[p].hand[ind]);
+        });
+        
         
         game.newRound();
     };

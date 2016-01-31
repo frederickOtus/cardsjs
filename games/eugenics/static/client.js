@@ -18,6 +18,20 @@ socket.on('choose card', function(m){
 
 socket.on("phase", function(m){
     console.log("phase: " + m);
+    footerLog("Phase: " + m);
+});
+
+socket.on("quest", function(m){
+    footerLog("Quest! You've added " + JSON.stringify(m) + " to your gene pool!"); 
+});
+socket.on("feed", function(m){
+    footerLog("Feed! " + JSON.stringify(m) + " removed from  your gene pool!"); 
+});
+socket.on("trade", function(m){
+    footerLog("Haha, Capitolism! You now have " + m + " monies!"); 
+});
+socket.on("quest", function(m){
+    footerLog("Quest! You've added " + JSON.stringify(m) + "to your gene pool!"); 
 });
 
 socket.on('event result', function(m){
@@ -60,13 +74,13 @@ function onCardSelect(clicked_id)
 	$("#" + clicked_id).addClass("selected");
 }
 
-function beast(){play("beast");}
+function feed(){play("feed");}
 
 function breed(){play("breed");}
 
 function quest(){play("quest");}
 
-function attack(){play("attack");}
+function trade(){play("trade");}
 
 function refilHand(){
 	i = 1;
@@ -140,7 +154,7 @@ $(".arrow").on("click",minimizeFooter);
 
 $(".card").on("click", function(){onCardSelect(this.id);});
 
-$(".beast").on("click", beast);
+$(".feed").on("click", feed);
 $(".breed").on("click", breed);
 $(".quest").on("click", quest);
-$(".attack").on("click", attack);
+$(".trade").on("click", trade);
