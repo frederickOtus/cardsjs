@@ -16,6 +16,7 @@ socket.on('named', function(m){
 
 socket.on('hand', function(m){
     console.log(JSON.stringify(m));
+    refreshHand(m);
 });
 
 socket.on('choose card', function(m){
@@ -195,12 +196,20 @@ function toggle_form(){
     }
 }
 
+function refreshHand(array_of_arrays){
+	id = 1;
+	while(id <= 4){
+		refreshCard(id, array_of_arrays[id - 1]);
+		id++;
+	}
+}
+
 function refreshCard(id, traits){
     $("#" + id + " .card_name").text(randomName);
     str = "";
     $.each(traits, function(x){
         console.log(a[x]);
-        str += "<li>" + a[x] + "</li>";
+        str += "<li>" + traits[x] + "</li>";
     });
     if (str === "") {
         str = "no traits lol";
