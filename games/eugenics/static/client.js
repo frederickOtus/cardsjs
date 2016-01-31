@@ -24,6 +24,7 @@ socket.on("phase", function(m){
 
 var selected_card = "";
 var state = "";
+var minimizedMessages = false;
 
 function onCardSelect(clicked_id)
 {
@@ -72,6 +73,7 @@ function play(action){
 	discard(selected_card, function(){
 		$("#" + selected_card).addClass("used");
 		$("#" + selected_card).removeClass("selected");
+		socket.emit("play card",[action, selected_card]);
 		selected_card = "";
 	});
 	socket.emit("play card",[action,selected_card]);
@@ -102,10 +104,25 @@ function animate_card(id, removeClass, addClass, callback){
 	$(temp_id).one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){state="";callback();});
 }
 
+function minimizeFooter(){
+	if(minimizedMessages == true){
+		$(".arrow").html("▼");
+		$(".footer").css("height", "200px");
+		minimizedMessages = false;
+	} else {
+		$(".arrow").html("▲");
+		$(".footer").css("height", "25px");
+		minimizedMessages = true;
+	}
+}
+
+function footerLog(message){
+	$(".message_container").append("<li>· " + message + "</li>");
+}
+
+$(".arrow").on("click",minimizeFooter);
 
 $(".card").on("click", function(){onCardSelect(this.id);});
-
-//$(".draw").on("click", draw);
 
 $(".beast").on("click", beast);
 $(".breed").on("click", breed);
