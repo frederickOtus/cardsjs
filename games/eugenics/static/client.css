@@ -23,7 +23,7 @@ div {
   background-color: teal;
 }
 
-.beast {
+.feed {
   background-color: red;
   width: 25%;
 }
@@ -39,7 +39,7 @@ div {
   width: 25%;
 }
 
-.attack {
+.trade {
   background-color: green;
   width: 25%;
 }
