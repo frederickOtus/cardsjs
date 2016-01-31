@@ -24,6 +24,7 @@ socket.on("phase", function(m){
 
 var selected_card = "";
 var state = "";
+var minimizedMessages = false;
 
 function onCardSelect(clicked_id)
 {
@@ -36,81 +37,92 @@ function onCardSelect(clicked_id)
 	console.log(clicked_id);
 	selected_card = clicked_id;
 
-	var cards = ["1", "2", "3", "4"];
-
-	for (i = 0; i < cards.length; i++){
-		$("#" + cards[i]).removeClass("selected");
+	for (i = 1; i <= 4; i++){
+		$("#" + i).removeClass("selected");
 	}
 
 	$("#" + clicked_id).addClass("selected");
 }
 
-$(".card").on("click", function(){onCardSelect(this.id);});
+function beast(){play("beast");}
 
-function beast()
-{
-	if(!selected_card || state == "animating"){
-		console.log("no card selected");
-		return "nope";
+function breed(){play("breed");}
+
+function quest(){play("quest");}
+
+function attack(){play("attack");}
+
+function refilHand(){
+	i = 1;
+	while(i <= 4){
+		if ($("#" + i).hasClass("used")) {
+			//change card here
+
+			draw(i);
+		};
+		i++;
 	}
-	console.log([selected_card, "beast"]);
-	discard();
 }
 
-function breed()
-{
-	if(!selected_card || state == "animating"){
-		console.log("no card selected");
-		return "nope";
-	}
-	console.log([selected_card, "breed"]);
-	discard();
-}
-
-function quest()
-{
-	if(!selected_card || state == "animating"){
-		console.log("no card selected");
-		return "nope";
-	}
-	console.log([selected_card, "quest"]);
-	discard();
-}
-
-function attack()
-{
-	if(!selected_card || state == "animating"){
-		console.log("no card selected");
-		return "nope";
-	}
-	console.log([selected_card, "attack"]);
-	discard();
-}
-
-function discard(){
-	if(!selected_card || state == "animating"){
-		console.log("no card selected");
-		return "nope";
-	}
-	state = "animating";
-	$("#" + selected_card).addClass("animated fadeOutUp");
-	$("#" + selected_card).one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', draw);
-}
-
-function draw(){
-	if(!selected_card){
-		console.log("Play a card first!");
+function play(action){
+	console.log([selected_card, action]);
+	if(!selected_card || state == "animating" || $("#" + i).hasClass("used")){
+		console.log("Select a card first!");
 		return false;
 	}
-	// Change Image Here:
-	$("#" + selected_card).removeClass("selected");
-	$("#" + selected_card).removeClass("animated fadeOutUp");
-	$("#" + selected_card).addClass("animated fadeInUp");
-	selected_card = "";
-	state = "";
+	discard(selected_card, function(){
+		$("#" + selected_card).addClass("used");
+		$("#" + selected_card).removeClass("selected");
+		socket.emit("play card",[action, selected_card]);
+		selected_card = "";
+	});
+	socket.emit("play card",[action,selected_card]);
 }
 
-$(".draw").on("click", draw);
+function draw(id){
+	animate_card(id, "fadeOutUp", "fadeInUp", function(){});
+}
+
+function draw(id, callback){
+	animate_card(id, "fadeOutUp", "fadeInUp", callback);
+}
+
+function discard(id){
+	animate_card(id, "fadeInUp", "fadeOutUp", function(){});
+}
+
+function discard(id, callback){
+	animate_card(id, "fadeInUp", "fadeOutUp", callback);
+}
+
+function animate_card(id, removeClass, addClass, callback){
+	if (typeof callback === 'undefined') { callback = function(){}; }
+	temp_id = "#" + id;
+	state = "animating";
+	$(temp_id).removeClass(removeClass);
+	$(temp_id).addClass("animated " + addClass);
+	$(temp_id).one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){state="";callback();});
+}
+
+function minimizeFooter(){
+	if(minimizedMessages == true){
+		$(".arrow").html("▼");
+		$(".footer").css("height", "200px");
+		minimizedMessages = false;
+	} else {
+		$(".arrow").html("▲");
+		$(".footer").css("height", "25px");
+		minimizedMessages = true;
+	}
+}
+
+function footerLog(message){
+	$(".message_container").append("<li>· " + message + "</li>");
+}
+
+$(".arrow").on("click",minimizeFooter);
+
+$(".card").on("click", function(){onCardSelect(this.id);});
 
 $(".beast").on("click", beast);
 $(".breed").on("click", breed);
