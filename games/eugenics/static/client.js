@@ -3,10 +3,16 @@ var socket = io('/game/');
 $(document).ready(function(){
     var name = localStorage.getItem('name');
     socket.emit('name', {'name': name, 'cookies':document.cookie});
+    $('#formButton').click(function(e){
+        e.preventDefault();
+        socket.emit('bribe', {'Marathon':0,'Dancing with the Stars': 0, 'Lifting':0 ,'Popularity Contest':0}) ;
+        toggle_form();
+        return false;
+    });
 });
 
 socket.on('named', function(m){
-});
+    });
 
 socket.on('hand', function(m){
     console.log(JSON.stringify(m));
@@ -19,6 +25,9 @@ socket.on('choose card', function(m){
 socket.on("phase", function(m){
     console.log("phase: " + m);
     footerLog("Phase: " + m);
+    if(m == 'bribe'){
+        toggle_form();
+    }
 });
 
 socket.on("quest", function(m){
@@ -166,6 +175,26 @@ function toggle_wait(){
     }
 }
 
+function toggle_form(){
+    if ($("#form_overlay").is(":visible")){
+        // console.log("hide");
+        $("#form_overlay").removeClass("rollIn");
+        $("#form_overlay").addClass("rollOut");
+        $("#form_overlay").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){$("#form_overlay").hide();});
+        state = "";
+    } else {
+        // console.log("show");
+        state = "animating";
+        $("#form_overlay").removeClass("rollOut");
+        $("#form_overlay").addClass("rollIn");
+        $("#form_overlay").show();
+        $("#form_overlay").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){$("#form_overlay").show();});
+    }
+    if(Math.random() < 0.01){
+        $("#form_text").text("Wait for your next turn, my Lord!");
+    }
+}
+
 function refreshCard(id, traits){
     $("#" + id + " .card_name").text(randomName);
     str = "";
@@ -173,9 +202,9 @@ function refreshCard(id, traits){
         console.log(a[x]);
         str += "<li>" + a[x] + "</li>";
     });
-    if (str == "") {
+    if (str === "") {
         str = "no traits lol";
-    };
+    }
     $("#" + id + " .card_traits").html(str);
 }
 
