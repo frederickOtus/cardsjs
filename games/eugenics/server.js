@@ -103,6 +103,7 @@ module.exports = function(nsp, host, settings){
     game.playerStates = {};
 
     game.wfp = wfBlocks.none;
+    game.cardsPlayed = 0;
 
     game.broadcast = function(name, payload){
         Object.keys(game.players).forEach(function(p){
@@ -132,6 +133,7 @@ module.exports = function(nsp, host, settings){
             game.players[p].emit("hand", game.playerStates[p].hand);
         });
         game.wfp = wfBlocks.play;
+        game.cardsPlayed = 0;
         game.broadcast("phase", "play");
     };
     game.bindListeners = function(s){
@@ -139,6 +141,11 @@ module.exports = function(nsp, host, settings){
         s.on('play card', function(m){
             console.log(m);
             if(game.wfp == wfBlocks.play){
+                if(game.playerStates[s.guid].hand[m[1]] === null){
+                    s.emit('card already played', m);
+                    return;
+                }
+
                 game.playerStates[s.guid].played = m;
 
                 var done = true;
@@ -147,20 +154,19 @@ module.exports = function(nsp, host, settings){
                 });
 
                 if(done){
-                    if(game.playerStates[s.guid].hand.length == 1){
-                        Object.keys(game.players).forEach(function(p){
-                            game.playerStates[p].hand.splice(0,1);
-                            //TODO actually play the damn card
-                        });
-                        console.log("played card");
+                    game.cardsPlayed++;
+                    Object.keys(game.players).forEach(function(p){
+                        //play the cards
+                        var play = game.playerStates[p].played;
+                        game.actionsRes(play[0],p,play[1]);
+                        game.playerStates[p].played = null;
+                    });
 
+                    if(game.cardsPlayed == 3){
                         game.wfp = wfBlocks.bribes;
                         game.broadcast("phase", "bribe");
                         game.broadcast(events, events);
                     }else{
-                        Object.keys(game.players).forEach(function(p){
-                            game.playerStates[p].played = null;
-                        });
                         game.broadcast("phase","play");
                     }
                 }
@@ -284,34 +290,58 @@ module.exports = function(nsp, host, settings){
         console.log("game over, winner: " + p);
     };
     
-    game.actionsRes = {'feed': game.feed, 'breed': game.breed, 'trade':game.trade, 'quest': game.quest, 'marriage': game.marriage};
+    game.actionsRes = function(action, p, ind){
+        switch(action){
+            case "feed":
+                game.feed(p, ind);
+                break;
+            case "breed":
+                game.breed(p, ind);
+                break;
+            case "trade":
+                game.trade(p, ind);
+                break;
+            case "quest":
+                game.quest(p, ind);
+                break;
+            case "marriage":
+                game.marriage(p, ind);
+                break;
+        }    
+    };
     
     game.quest = function(p, ind){
         var traits = [gtraits[getRandomInt(0, gtraits.length)],btraits[getRandomInt(0,btraits.length)]];
         game.players[p].emit('quest',traits);
         game.playerStates[p].discard.push(traits);
-        game.playerStates[p].discard.push(game.playerStates[p].hand.splice(ind,1));
+        game.playerStates[p].discard.push(game.playerStates[p].hand[ind]);
+        game.playerStates[p].hand[ind] = null;
     };
 
     game.trade = function(p, ind){
-        game.playerStates[p].discard.push(traits);
+        game.playerStates[p].discard.push(game.playerStates[p].hand[ind]);
         game.playerStates[p].money+=2;
         game.players[p].emit('trade',game.playerStates[p].money);
+        game.playerStates[p].hand[ind] = null;
     };
 
-    game.marriage = function(p1,p2,ind){
+    game.marriage = function(p,ind){
         console.log('not implemented');
+        game.playerStates[p].discard.push(game.playerStates[p].hand[ind]);
+        game.playerStates[p].hand[ind] = null;
     };
 
     game.breed = function(p, ind){
-        var traits = game.playerStates[p].hand.splice(ind,1);
+        var traits = game.playerStates[p].hand[ind];
         game.playerStates[p].discard.push(traits);
         game.playerStates[p].discard.push(traits);
+        game.playerStates[p].hand[ind] = null;
         game.players[p].emit('breed',traits);
     };
     
     game.feed = function(p, ind){
-        var traits = game.playerStates[p].hand.splice(ind,1);
+        var traits = game.playerStates[p].hand[ind];
+        game.playerStates[p].hand[ind] = null;
         game.players[p].emit('feed',traits);
     };
 
