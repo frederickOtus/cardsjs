@@ -12,10 +12,12 @@ module.exports = function(nsp,room){
             socket.emit('joined lobby', {'name': name, 'users': this.names, 'msgs': this.recentMsgs});
             nsp.to(room).emit('user joined', name);
 
+            var self = this;
+
             socket.on('chat message', function(msg){
                 var m = {'msg': ": " + msg, 'sender': name};
                 nsp.to(room).emit('chat message', m);
-                this.recentMsgs.push(m);
+                self.recentMsgs.push(m);
             });
 
             socket.join(room);
