@@ -5,10 +5,19 @@ $(document).ready(function(){
     socket.emit('name', {'name': name, 'cookies':document.cookie});
     $('#formButton').click(function(e){
         e.preventDefault();
-        console.log("WAT");
         toggle_form();
-        socket.emit('bribe', socket.emit('bribe', {'Marathon':0,'Dancing with the Stars': 0, 'Lifting':0 ,'Popularity Contest':0, 'Not Getting Assassinated':0, 'Staring Contest':0}));
+        socket.emit('bribe', socket.emit('bribe', 
+                    {'Marathon':$('input[name=marathon]:checked').val(),
+                     'Dancing with the Stars': $('input[name=dancing]:checked').val(), 
+                     'Lifting': $('input[name=lifting]:checked').val(),
+                     'Popularity Contest':$('input[name=popularity]:checked').val(), 
+                     'Not Getting Assassinated':$('input[name=assassinated]:checked').val(), 
+                     'Staring Contest':$('input[name=staring]:checked').val()}));
         return false;
+    });
+
+    $('input','#bribeForm').change(function(e){
+        $('#cost').text(getCost());
     });
 });
 
@@ -16,19 +25,19 @@ socket.on('named', function(m){
 });
 
 socket.on('hand', function(m){
-    console.log(JSON.stringify(m));
     //discardHand();
     refreshHand(m);
 });
 
 socket.on('choose card', function(m){
-    console.log('Need to choose a card');
 });
 
 socket.on("phase", function(m){
-    console.log("phase: " + m);
-    footerLog("Phase: " + m);
-    if(m == 'bribe'){
+    console.log(JSON.stringify(m));
+    footerLog("Phase: " + m.name);
+    if(m.name == 'bribe'){
+        footerLog("You have " + m.data + " to bribe with");
+        $("#money").text(m.data);
         toggle_form();
     }
 });
@@ -55,11 +64,9 @@ socket.on('acension winner', function(m){
 });
 
 socket.on('event winner', function(m){
-    //console.log("winner: " + JSON.stringify(m.winners) + " (" + m.score + ")");
 });
 
 socket.on('bad bribe', function(m){
-    console.log(m);
 });
 
 // Unlimited Card Works
@@ -76,7 +83,6 @@ function onCardSelect(clicked_id)
         selected_card = "";
         return;
     }
-    console.log(clicked_id);
     selected_card = clicked_id;
 
     for (i = 1; i <= 4; i++){
@@ -95,9 +101,7 @@ function quest(){play("quest");}
 function trade(){play("trade");}
 
 function play(action){
-    console.log([selected_card, action]);
     if(!selected_card || state == "animating" || $("#" + i).hasClass("used")){
-        console.log("Select a card first!");
         return false;
 }
     discard(selected_card, function(){
@@ -148,13 +152,11 @@ function minimizeFooter(){
 
 function toggle_wait(){
     if ($("#wait_overlay").is(":visible")){
-        // console.log("hide");
         $("#wait_overlay").removeClass("rollIn");
         $("#wait_overlay").addClass("rollOut");
         $("#wait_overlay").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){$("#wait_overlay").hide();});
         state = "";
     } else {
-        // console.log("show");
         state = "animating";
         $("#wait_overlay").removeClass("rollOut");
         $("#wait_overlay").addClass("rollIn");
@@ -168,13 +170,11 @@ function toggle_wait(){
 
 function toggle_form(){
     if ($("#wait_overlay").is(":visible")){
-        console.log("hide");
         $("#wait_overlay").removeClass("rollIn");
         $("#wait_overlay").addClass("rollOut");
         $("#wait_overlay").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function(){$("#wait_overlay").hide();});
         state = "";
     } else {
-        console.log("show");
         state = "animating";
         $("#wait_overlay").removeClass("rollOut");
         $("#wait_overlay").addClass("rollIn");
@@ -205,7 +205,6 @@ function refreshCard(id, traits){
     $("#" + id + " .card_name").text(randomName);
     str = "";
     $.each(traits, function(x){
-        console.log(traits[x]);
         str += "<li>" + traits[x] + "</li>";
     });
     if (str === "") {
@@ -232,3 +231,17 @@ $(".quest").on("click", quest);
 $(".trade").on("click", trade);
 
 var names = ['Grorik','Pendrus','Merlin','Merlina','Gryndolyn','Cancelot','Mainard','Merhild','Isabander','Thea','Williamina','Gregor','Gilpin','Rubbus','Renaud','Swetiue','Millicent','Ellyn','Benvolio','Romeo','Juliette','Romania','Julio','Cedric', "Bigger Luke"];
+
+function getCost(){
+    var elms = $('input:checked','#bribeForm');
+    var cost = 0;
+    elms.each(function(i, e){
+        if(e.value == "1")
+            cost+=2;
+        if(e.value == "2")
+            cost+=5;
+        if(e.value == "3")
+            cost+=9;
+    });
+    return cost;
+}

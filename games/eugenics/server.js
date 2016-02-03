@@ -120,12 +120,12 @@ module.exports = function(nsp, host, settings){
             game.playerStates[p].discard.push(house.startTraits);
         });
 
-        game.broadcast("phase", "start");
+        game.broadcast("phase", {'name':"start",'data':null});
         game.newRound();
     };
 
     game.newRound = function(){
-        game.broadcast("phase", "round");
+        game.broadcast("phase", {'name':"round",'data':null});
 
         Object.keys(game.players).forEach(function(p){
             game.playerStates[p].hand = nextGen(game.playerStates[p]);
@@ -135,7 +135,7 @@ module.exports = function(nsp, host, settings){
         });
         game.wfp = wfBlocks.play;
         game.cardsPlayed = 0;
-        game.broadcast("phase", "play");
+        game.broadcast("phase", {'name':"play",'data':null});
     };
     game.bindListeners = function(s){
         
@@ -164,17 +164,19 @@ module.exports = function(nsp, host, settings){
 
                     if(game.cardsPlayed == 3){
                         game.wfp = wfBlocks.bribes;
-                        game.broadcast("phase", "bribe");
-                        console.log("wat");
+                        Object.keys(game.players).forEach(function(p){
+                            game.players[p].emit('phase',{'name':'bribe', 'data': game.playerStates[p].money});
+                        });
                         game.broadcast(events, events);
                     }else{
-                        game.broadcast("phase","play");
+                        game.broadcast("phase",{'name':"play",'data':null});
                     }
                 }
             }
         });
 
         s.on('bribe', function(m){
+            console.log(JSON.stringify(m));
             if(game.wfp == wfBlocks.bribes){
                 var cost = bribeCost(m);
                 if(cost == -1){
@@ -231,7 +233,7 @@ module.exports = function(nsp, host, settings){
     };
     
     game.ascend = function() {
-        game.broadcast('phase', 'ascend');
+        game.broadcast('phase', {'name':'ascend','data':null});
         wins = {};
         Object.keys(game.players).forEach(function(p){
             wins[p] = 0;
@@ -310,7 +312,7 @@ module.exports = function(nsp, host, settings){
     };
 
     game.end = function(p){
-        game.broadcast("phase", "end");
+        game.broadcast("phase", {'name':"end",'data':p});
         console.log("game over, winner: " + p);
     };
     
