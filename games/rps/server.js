@@ -28,7 +28,7 @@ module.exports = function(nsp, host, settings){
     };
 
     game.connect = function(s){
-        this.connectedPlayers.push(s.guid);
+        this.connectedPlayers.push(s.username);
         if(this.connectedPlayers.length == this.players.length){
             if(!this.started){
                 this.start();
@@ -43,7 +43,7 @@ module.exports = function(nsp, host, settings){
                 self.pause();
             }
 
-            self.connectedPlayers.splice(self.connectedPlayers.indexOf(s.guid),1);
+            self.connectedPlayers.splice(self.connectedPlayers.indexOf(s.username),1);
         });
     };
 

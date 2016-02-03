@@ -141,12 +141,12 @@ module.exports = function(nsp, host, settings){
         
         s.on('play card', function(m){
             if(game.wfp == wfBlocks.play){
-                if(game.playerStates[s.guid].hand[m[1]] === null){
+                if(game.playerStates[s.username].hand[m[1]] === null){
                     s.emit('card already played', m);
                     return;
                 }
 
-                game.playerStates[s.guid].played = m;
+                game.playerStates[s.username].played = m;
 
                 var done = true;
                 Object.keys(game.players).forEach(function(p){
@@ -179,12 +179,12 @@ module.exports = function(nsp, host, settings){
                 var cost = bribeCost(m);
                 if(cost == -1){
                     s.emit('bad bribe', 'cannot do more than +3');
-                    game.playerStates[s.guid].bribed = {'Marathon':0,'Dancing with the Stars': 0, 'Lifting':0 ,'Popularity Contest':0, 'Not Getting Assassinated':0, 'Staring Contest':0};
-                }else if(cost >  game.playerStates[s.guid].money){
+                    game.playerStates[s.username].bribed = {'Marathon':0,'Dancing with the Stars': 0, 'Lifting':0 ,'Popularity Contest':0, 'Not Getting Assassinated':0, 'Staring Contest':0};
+                }else if(cost >  game.playerStates[s.username].money){
                     s.emit('bad bribe', 'you do not have enough money'); 
-                    game.playerStates[s.guid].bribed = {'Marathon':0,'Dancing with the Stars': 0, 'Lifting':0 ,'Popularity Contest':0, 'Not Getting Assassinated':0, 'Staring Contest':0};
+                    game.playerStates[s.username].bribed = {'Marathon':0,'Dancing with the Stars': 0, 'Lifting':0 ,'Popularity Contest':0, 'Not Getting Assassinated':0, 'Staring Contest':0};
                 }else{
-                    game.playerStates[s.guid].bribed = m;
+                    game.playerStates[s.username].bribed = m;
                 }
 
                 var done = true;

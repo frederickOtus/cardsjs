@@ -1,6 +1,6 @@
 module.exports = function(host){
     var ps = {};
-    ps[host.guid] = null;
+    ps[host.username] = null;
 
     return {
         started: false,
@@ -11,17 +11,17 @@ module.exports = function(host){
         players: ps,
         connectedPlayers: [],
         join: function(socket){
-            if(this.players.hasOwnProperty(socket.guid)){
+            if(this.players.hasOwnProperty(socket.username)){
                 return false;
             }
 
-            this.players[socket.guid] = null;
+            this.players[socket.username] = null;
             return true;
         },
 
         leave: function(socket){
-            if(this.players.hasOwnProperty(socket.guid)){
-                delete this.players[socket.guid];
+            if(this.players.hasOwnProperty(socket.username)){
+                delete this.players[socket.username];
                 return true;
             }
 
@@ -49,7 +49,7 @@ module.exports = function(host){
         connect : function(s){
             this.bindListeners(s);
 
-            this.players[s.guid] = s;
+            this.players[s.username] = s;
             var numConnected = 0;
             for (var key in this.players) {
                 if (this.players.hasOwnProperty(key) && this.players[key] !== null) {
@@ -71,7 +71,7 @@ module.exports = function(host){
                 if(self.started && !self.paused){
                     self.pause();
                 }
-                self.players[s.guid] = null;
+                self.players[s.username] = null;
             });
         }
     };
