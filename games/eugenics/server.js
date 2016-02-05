@@ -64,7 +64,7 @@ function playerState(house){
     self.hand = [];
     self.discard = [];
     self.ascensions = 0;
-    self.money = 0;
+    self.money = 10;
 
     self.played = null;
     self.decision = null;
@@ -75,21 +75,21 @@ function playerState(house){
 function bribeCost(bribes){
     cost = 0;
     for(var key in bribes){
-       switch(bribes[key]){
+        var val = parseInt(bribes[key]);
+        switch(val){
             case 0:
             break;
             case 1:
-                cost+=1;
-            break;
-            case 2:
                 cost+=2;
             break;
+            case 2:
+                cost+=5;
+            break;
             case 3:
-                cost+=3;
+                cost+=9;
             break;
             default:
                 return -1;
-
        }
     }
     return cost;
@@ -179,6 +179,7 @@ module.exports = function(nsp, host, settings){
             console.log(JSON.stringify(m));
             if(game.wfp == wfBlocks.bribes){
                 var cost = bribeCost(m);
+                console.log(s.username + " bribe val: " + cost);
                 if(cost == -1){
                     s.emit('bad bribe', 'cannot do more than +3');
                     game.playerStates[s.username].bribed = {'Marathon':0,'Dancing with the Stars': 0, 'Lifting':0 ,'Popularity Contest':0, 'Not Getting Assassinated':0, 'Staring Contest':0};
@@ -210,7 +211,7 @@ module.exports = function(nsp, host, settings){
         var ind = [];
        
         for(var i =0; i < game.playerStates[p].hand.length; i++){
-            if(game.playerStates[p].hand[i] !== 0){
+            if(game.playerStates[p].hand[i] !== null){
                 ind = i;
                 break;
             }
@@ -228,7 +229,12 @@ module.exports = function(nsp, host, settings){
         });
         
         score += game.playerStates[p].bribed[ev.name];
-        game.players[p].emit('event result', {'name': ev.name, 'score': score, 'boons': boonText, 'banes': baneText});
+        game.players[p].emit('event result', 
+                {'name': ev.name, 
+                    'score': score, 
+                    'boons': boonText, 
+                    'banes': baneText, 
+                    'bribes': game.playerStates[p].bribed[ev.name]});
         return score;
     };
     

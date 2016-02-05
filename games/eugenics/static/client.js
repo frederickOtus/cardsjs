@@ -33,7 +33,6 @@ socket.on('choose card', function(m){
 });
 
 socket.on("phase", function(m){
-    console.log(JSON.stringify(m));
     footerLog("Phase: " + m.name);
     if(m.name == 'bribe'){
         footerLog("You have " + m.data + " to bribe with");
@@ -57,6 +56,7 @@ socket.on("breed", function(m){
 
 socket.on('event result', function(m){
     footerLog(m.name + ' Result: ' + m.score);
+    console.log(JSON.stringify(m));
 });
 
 socket.on('acension winner', function(m){
