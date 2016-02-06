@@ -19,37 +19,21 @@ module.exports = function(host){
             return true;
         },
 
-        leave: function(socket){
-            if(this.players.hasOwnProperty(socket.username)){
-                delete this.players[socket.username];
-                return true;
-            }
-
-            return false;
-        },
-
-        unpause : function(){
-            this.paused = false;
-            console.log("Unpaused! Player returned");
-        },
-
-        pause : function(){
-            this.paused = true;
-            console.log("Paused! Player left");
-        },
-
-        ready: function(){
-            return this.numPlayers == Object.keys(this.players).length;
-        },
-
-        bindListeners: function(s){
-            return;
+        broadcast: function(name, payload){
+            Object.keys(this.players).forEach(function(p){
+                this.players[p].emit(name, payload);
+            });
         },
 
         connect : function(s){
             this.bindListeners(s);
 
             this.players[s.username] = s;
+
+            if(this.started){
+                this.reconnect(s);
+            }
+
             var numConnected = 0;
             for (var key in this.players) {
                 if (this.players.hasOwnProperty(key) && this.players[key] !== null) {
@@ -71,8 +55,35 @@ module.exports = function(host){
                 if(self.started && !self.paused){
                     self.pause();
                 }
+
                 self.players[s.username] = null;
+                self.leave(s);
             });
-        }
+        },
+
+        _unpause: function(){ this.paused = false; this.unpause(); },
+
+        ready: function(){
+            return this.numPlayers == Object.keys(this.players).length;
+        },
+
+        /* Overwrite these functions */
+        unpause : function(){
+            this.broadcast("unpaused","");
+        },
+
+        pause : function(){
+            this.broadcast("paused","");
+        },
+
+        bindListeners: function(s){
+        },
+
+        leave: function(s){
+        },
+
+        reconnect: function(s){
+        },
+        /* ----------- */
     };
 };
