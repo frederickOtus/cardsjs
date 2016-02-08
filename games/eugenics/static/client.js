@@ -55,7 +55,10 @@ socket.on("breed", function(m){
 });
 
 socket.on('event result', function(m){
+    footerLog("****");
     footerLog(m.name + ' Result: ' + m.score);
+    footerLog("Boons: " + JSON.stringify(m.boons));
+    footerLog("Banes: " + JSON.stringify(m.banes));
     console.log(JSON.stringify(m));
 });
 

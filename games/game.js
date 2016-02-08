@@ -20,8 +20,11 @@ module.exports = function(host){
         },
 
         broadcast: function(name, payload){
+            var self = this;
             Object.keys(this.players).forEach(function(p){
-                this.players[p].emit(name, payload);
+                if(self.players[p] !== null){
+                    self.players[p].emit(name, payload);
+                }
             });
         },
 
